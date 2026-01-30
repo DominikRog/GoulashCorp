@@ -33,6 +33,6 @@ func _physics_process(delta: float) -> void:
 		# animacja idle
 		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("Idle"):
 			if sprite.animation != "Idle":
-				return
+				sprite.play("Idle")
 
 	move_and_slide()
