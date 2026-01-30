@@ -20,7 +20,7 @@ func _physics_process(delta: float) -> void:
 		velocity = input_vector.normalized() * speed
 
 		# animacja ruchu
-		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("run"):
+		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("Move"):
 			if sprite.animation != "Move":
 				sprite.play("Move")
 
@@ -31,8 +31,8 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 
 		# animacja idle
-		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("idle"):
-			if sprite.animation != "idle":
-				sprite.play("idle")
+		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("Idle"):
+			if sprite.animation != "Idle":
+				return
 
 	move_and_slide()

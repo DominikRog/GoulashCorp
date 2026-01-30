@@ -11,6 +11,6 @@
 z_index = -10
 texture = ExtResource("1_q12u6")
 
-[node name="Player" parent="Background/BackgroundImg" unique_id=1539755097 instance=ExtResource("2_q12u6")]
+[node name="Node2D" parent="Background/BackgroundImg" unique_id=1539755097 instance=ExtResource("2_q12u6")]
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1655870833]
