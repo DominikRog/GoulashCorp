@@ -1,10 +1,13 @@
-[gd_scene format=3 uid="uid://dwcwaornvynca"]
+[gd_scene format=3 uid="uid://dksrriyiw6r2u"]
 
-[ext_resource type="PackedScene" uid="uid://bhqfiwbtnpv8l" path="res://Scenes/Level1.tscn" id="1_idj7w"]
+[ext_resource type="PackedScene" uid="uid://bhqfiwbtnpv8l" path="res://Scenes/BackGround.tscn" id="1_idj7w"]
 [ext_resource type="PackedScene" uid="uid://j54lupoylhq8" path="res://Scenes/Player.tscn" id="2_kln2b"]
+[ext_resource type="PackedScene" uid="uid://y68r0df7ji7u" path="res://Scenes/lvl_1.tscn" id="3_kln2b"]
 
 [node name="Main" type="Node2D" unique_id=2080734774]
 
-[node name="Level1" parent="." unique_id=245484995 instance=ExtResource("1_idj7w")]
+[node name="background" parent="." unique_id=245484995 instance=ExtResource("1_idj7w")]
 
-[node name="Node2D" parent="Level1" unique_id=1539755097 instance=ExtResource("2_kln2b")]
+[node name="Player" parent="background" unique_id=1539755097 instance=ExtResource("2_kln2b")]
+
+[node name="Lvl_1" parent="background" unique_id=1046851630 instance=ExtResource("3_kln2b")]

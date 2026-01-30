@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://y68r0df7ji7u"]
+
+[ext_resource type="Script" uid="uid://clvd6pgch7834" path="res://Scenes/target_area.gd" id="1_qjdxc"]
+[ext_resource type="Script" uid="uid://bw8ewfcsgccgv" path="res://Scenes/lvl_1.gd" id="1_rf4qq"]
+[ext_resource type="Script" uid="uid://d13lcgng70x7u" path="res://Scenes/blocks.gd" id="2_671ag"]
+
+[node name="Lvl_1" type="Node2D" unique_id=1046851630]
+script = ExtResource("1_rf4qq")
+
+[node name="TargetArea" type="Node2D" parent="." unique_id=1454181602]
+script = ExtResource("1_qjdxc")
+
+[node name="Blocks" type="Node2D" parent="." unique_id=1203825176]
+script = ExtResource("2_671ag")
