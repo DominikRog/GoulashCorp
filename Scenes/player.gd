@@ -1,25 +1,38 @@
-extends Node2D
+extends CharacterBody2D
 
-@export var width := 26.0
-@export var height := 40.0
+@export var speed: float = 220.0
 
-func _draw() -> void:
-	# rysuje białą fasolkę / kapsułę
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1, 1))
-	_draw_capsule(Vector2.ZERO, width, height, Color.WHITE)
-
-func _draw_capsule(center: Vector2, w: float, h: float, col: Color) -> void:
-	var r := w * 0.5
-	var body_h: float = max(0.0, h - 2.0 * r)
-
-	# prostokąt "tułowia"
-	if body_h > 0.0:
-		var rect := Rect2(center.x - r, center.y - body_h * 0.5, w, body_h)
-		draw_rect(rect, col)
-
-	# kółka góra/dół
-	draw_circle(Vector2(center.x, center.y - body_h * 0.5), r, col)
-	draw_circle(Vector2(center.x, center.y + body_h * 0.5), r, col)
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 func _ready() -> void:
-	queue_redraw()
+	# startowa animacja
+	if sprite.sprite_frames != null:
+		if sprite.sprite_frames.has_animation("Idle"):
+			sprite.play("Idle")
+
+func _physics_process(delta: float) -> void:
+	var input_vector := Vector2(
+		Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
+		Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
+	)
+
+	if input_vector.length() > 0.0:
+		velocity = input_vector.normalized() * speed
+
+		# animacja ruchu
+		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("run"):
+			if sprite.animation != "Move":
+				sprite.play("Move")
+
+		# flip lewo/prawo (jeśli sprite patrzy w prawo domyślnie)
+		if input_vector.x != 0:
+			sprite.flip_h = input_vector.x < 0
+	else:
+		velocity = Vector2.ZERO
+
+		# animacja idle
+		if sprite.sprite_frames != null and sprite.sprite_frames.has_animation("idle"):
+			if sprite.animation != "idle":
+				sprite.play("idle")
+
+	move_and_slide()
