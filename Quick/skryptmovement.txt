@@ -1,0 +1,14 @@
+extends CharacterBody2D
+
+@export var speed := 200.0
+var can_move: bool = true
+
+func _physics_process(_delta):
+	if can_move == true:
+		var input_vector = Vector2.ZERO
+
+		input_vector.x = Input.get_action_strength("player_right") - Input.get_action_strength("player_left")
+		input_vector.y = Input.get_action_strength("player_down") - Input.get_action_strength("player_up")
+
+		input_vector = input_vector.normalized()
+		velocity = input_vector * speed
