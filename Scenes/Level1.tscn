@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bhqfiwbtnpv8l"]
 
 [ext_resource type="Texture2D" uid="uid://b6es3txnpclsm" path="res://Assets/1280x720_grey.jpg" id="1_q12u6"]
+[ext_resource type="Script" uid="uid://ctoc6j2woya0m" path="res://Scenes/player.gd" id="2_q12u6"]
 
 [node name="Level1" type="Node2D" unique_id=245484995]
 
@@ -9,5 +10,8 @@
 [node name="BackgroundImg" type="Sprite2D" parent="Background" unique_id=496475986]
 z_index = -10
 texture = ExtResource("1_q12u6")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Background/BackgroundImg" unique_id=1557750734]
+script = ExtResource("2_q12u6")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1655870833]
