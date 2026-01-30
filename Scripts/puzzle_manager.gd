@@ -1,0 +1,279 @@
+extends Node2D
+
+# Manages puzzle game: spawns shapes, tracks completion, timer
+
+@export var play_area_size: Vector2 = Vector2(1280, 720)
+@export var shape_preview_duration: float = 1.0
+@export var tile_scene: PackedScene = preload("res://Scenes/Tile.tscn")
+
+var current_shapes: Array[String] = []
+var current_shape_index: int = 0
+var tiles: Array[RigidBody2D] = []
+var shape_center: Vector2 = Vector2.ZERO
+var timer: float = 0.0
+var timer_active: bool = false
+
+@onready var timer_label: Label = $UI/TimerLabel
+@onready var shape_display: Node2D = $ShapeDisplay
+@onready var player: CharacterBody2D = $Player
+
+signal all_shapes_completed
+signal timer_expired
+signal shape_completed
+
+func _ready():
+	# Get current act data
+	var act_data = GameManager.get_current_act_data()
+	if act_data.is_empty():
+		push_error("No act data found!")
+		return
+
+	var shapes_data = act_data.get("shapes", [])
+	current_shapes.assign(shapes_data)
+	timer = act_data.get("timer", 45.0)
+
+	GameManager.total_shapes_in_act = current_shapes.size()
+
+	# Position player at center and hide initially
+	shape_center = play_area_size / 2
+	if player:
+		player.global_position = shape_center
+		player.visible = false
+		player.can_move = false
+
+	# Start with first shape
+	start_next_shape()
+
+func _process(delta):
+	if timer_active:
+		timer -= delta
+		update_timer_display()
+
+		if timer <= 0:
+			timer_active = false
+			timer_expired.emit()
+			restart_puzzle()
+
+func start_next_shape():
+	"""Begin the next shape puzzle"""
+	if current_shape_index >= current_shapes.size():
+		# All shapes completed
+		all_shapes_completed.emit()
+		return
+
+	var shape_name = current_shapes[current_shape_index]
+
+	# Show preview
+	await show_shape_preview(shape_name)
+
+	# Split and scatter
+	spawn_and_scatter_tiles(shape_name)
+
+	# Start timer
+	timer_active = true
+
+func show_shape_preview(shape_name: String):
+	"""Display the complete shape for 1 second"""
+	# Create visual of complete shape at center
+	var preview = create_shape_preview(shape_name)
+	shape_display.add_child(preview)
+
+	await get_tree().create_timer(shape_preview_duration).timeout
+
+	# Remove preview
+	preview.queue_free()
+
+func create_shape_preview(shape_name: String) -> Node2D:
+	"""Create a visual representation of the complete 3x3 shape"""
+	var container = Node2D.new()
+	container.position = shape_center
+
+	# Load the complete 48x48 shape texture
+	var shape_texture = load_shape_texture(shape_name)
+
+	if shape_texture:
+		# Show the complete shape as one sprite
+		var sprite = Sprite2D.new()
+		sprite.texture = shape_texture
+		sprite.position = Vector2.ZERO
+		container.add_child(sprite)
+	else:
+		# Fallback: Create 3x3 grid of colored tiles
+		for y in range(3):
+			for x in range(3):
+				var tile_visual = Sprite2D.new()
+				tile_visual.position = Vector2(x * 16 - 16, y * 16 - 16)
+
+				# Placeholder: random color for each tile
+				var color_rect = ColorRect.new()
+				color_rect.size = Vector2(16, 16)
+				color_rect.color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0))
+				color_rect.position = Vector2(-8, -8)
+
+				tile_visual.add_child(color_rect)
+				container.add_child(tile_visual)
+
+	return container
+
+func spawn_and_scatter_tiles(shape_name: String):
+	"""Create 9 tiles and scatter them randomly"""
+	# Load shape texture (48x48 PNG)
+	var shape_texture = load_shape_texture(shape_name)
+
+	# Calculate correct positions (3x3 grid centered)
+	var correct_positions: Array[Vector2] = []
+	for y in range(3):
+		for x in range(3):
+			var pos = shape_center + Vector2(x * 16 - 16, y * 16 - 16)
+			correct_positions.append(pos)
+
+	# Create tiles
+	for i in range(9):
+		var tile = tile_scene.instantiate()
+		add_child(tile)
+
+		# Calculate which part of the 48x48 texture this tile uses
+		var tile_x = i % 3
+		var tile_y = i / 3
+		var tile_texture = extract_tile_texture(shape_texture, tile_x, tile_y)
+
+		# Setup tile
+		tile.setup(shape_name, i, correct_positions[i], tile_texture)
+
+		# Scatter to random position
+		var scatter_pos = get_random_scatter_position()
+		tile.scatter_to(scatter_pos)
+
+		# Connect snapped signal
+		tile.tile_snapped.connect(_on_tile_snapped)
+
+		tiles.append(tile)
+
+	# Show player after 1 second delay (after splitout animation)
+	await get_tree().create_timer(1.0).timeout
+	if player:
+		player.visible = true
+		player.can_move = true
+
+func load_shape_texture(shape_name: String) -> Texture2D:
+	"""Load 48x48 shape texture from Assets/Shapes/"""
+	var path = "res://Assets/Shapes/" + shape_name + ".png"
+	if ResourceLoader.exists(path):
+		return load(path)
+	else:
+		# Return null if not found, tile will use placeholder
+		return null
+
+func extract_tile_texture(shape_texture: Texture2D, tile_x: int, tile_y: int) -> Texture2D:
+	"""Extract a 16x16 tile from the 48x48 shape texture"""
+	if shape_texture == null:
+		return null
+
+	# Create AtlasTexture to represent one tile from the shape
+	var atlas = AtlasTexture.new()
+	atlas.atlas = shape_texture
+	atlas.region = Rect2(tile_x * 16, tile_y * 16, 16, 16)
+	return atlas
+
+func get_random_scatter_position() -> Vector2:
+	"""Get a random position within play area, away from center"""
+	var margin = 100
+	var attempts = 0
+	var max_attempts = 20
+
+	while attempts < max_attempts:
+		var x = randf_range(margin, play_area_size.x - margin)
+		var y = randf_range(margin, play_area_size.y - margin)
+		var pos = Vector2(x, y)
+
+		# Ensure it's far enough from center
+		if pos.distance_to(shape_center) > 100:
+			return pos
+
+		attempts += 1
+
+	# Fallback
+	return Vector2(randf_range(margin, play_area_size.x - margin),
+				   randf_range(margin, play_area_size.y - margin))
+
+func _on_tile_snapped():
+	"""Called when a tile snaps into place"""
+	# Check if all tiles are snapped
+	var all_snapped = true
+	for tile in tiles:
+		if not tile.is_snapped:
+			all_snapped = false
+			break
+
+	if all_snapped:
+		complete_current_shape()
+
+func complete_current_shape():
+	"""Current shape is complete, move to next"""
+	var shape_name = current_shapes[current_shape_index]
+
+	# Hide player during transition
+	if player:
+		player.visible = false
+		player.can_move = false
+
+	# Clear tiles
+	for tile in tiles:
+		tile.queue_free()
+	tiles.clear()
+
+	# Update game state
+	GameManager.complete_shape(shape_name)
+	shape_completed.emit()
+
+	current_shape_index += 1
+
+	# Check if all shapes done
+	if current_shape_index >= current_shapes.size():
+		timer_active = false
+		all_shapes_completed.emit()
+	else:
+		# Next shape
+		start_next_shape()
+
+func restart_puzzle():
+	"""Restart current puzzle after timer expires"""
+	# Hide player during restart
+	if player:
+		player.visible = false
+		player.can_move = false
+
+	# Clear tiles
+	for tile in tiles:
+		tile.queue_free()
+	tiles.clear()
+
+	# Reset timer
+	var act_data = GameManager.get_current_act_data()
+	timer = act_data.get("timer", 45.0)
+
+	# Restart same shape
+	current_shape_index = max(0, current_shape_index)
+	start_next_shape()
+
+func update_timer_display():
+	"""Update the timer UI"""
+	if timer_label:
+		var minutes = int(timer) / 60
+		var seconds = int(timer) % 60
+		timer_label.text = "%02d:%02d" % [minutes, seconds]
+
+		# Warning color when low
+		if timer < 10:
+			timer_label.modulate = Color(1, 0.3, 0.3)
+		else:
+			timer_label.modulate = Color(1, 1, 1)
+
+func _on_all_shapes_completed():
+	"""All shapes in act are done, move to mind puzzle"""
+	# Transition to dialogue for mind puzzle
+	get_tree().change_scene_to_file("res://Scenes/Dialogue.tscn")
+
+func _on_timer_expired():
+	"""Timer ran out, restart puzzle"""
+	restart_puzzle()

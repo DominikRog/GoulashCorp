@@ -1,0 +1,82 @@
+[gd_scene format=3 uid="uid://ew0yy2yei8vf"]
+
+[ext_resource type="Script" path="res://Scripts/puzzle_manager.gd" id="1_puzzle"]
+[ext_resource type="PackedScene" uid="uid://b2qfxv5g0tq5c" path="res://Scenes/player.tscn" id="2_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
+size = Vector2(20, 720)
+
+[node name="PuzzleGame" type="Node2D"]
+script = ExtResource("1_puzzle")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="PlayArea" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.2, 0.22, 0.28, 1)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+zoom = Vector2(1, 1)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(640, 360)
+collision_layer = 1
+collision_mask = 6
+
+[node name="ShapeDisplay" type="Node2D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="TimerLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "00:45"
+
+[node name="ActLabel" type="Label" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 24
+text = "Act 1"
+horizontal_alignment = 2
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 3
+
+[node name="LeftWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-10, 360)
+shape = SubResource("RectangleShape2D_walls")
+
+[node name="RightWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1290, 360)
+shape = SubResource("RectangleShape2D_walls")
+
+[node name="TopWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, -10)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_walls")
+
+[node name="BottomWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, 730)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_walls")
+
+[connection signal="all_shapes_completed" from="." to="." method="_on_all_shapes_completed"]
+[connection signal="timer_expired" from="." to="." method="_on_timer_expired"]
