@@ -11,6 +11,9 @@ signal entrance_completed
 
 @onready var sprite: Sprite2D = $Sprite2D
 
+func _ready() -> void:
+	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+
 func _physics_process(delta):
 	# Handle entrance animation
 	if is_entering:
