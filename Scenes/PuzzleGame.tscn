@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bgneff5q81fuk"]
 
 [ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
-[ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Assets/Tiles_Set.png" id="2_euhyg"]
+[ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Old Assets/Tiles_Set.png" id="2_euhyg"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/Player.tscn" id="2_player"]
 [ext_resource type="AudioStream" uid="uid://cjpvoyiwb0rs3" path="res://Audio/LevelComplete.mp3" id="4_vxw10"]
 [ext_resource type="AudioStream" uid="uid://de23bwkonenvn" path="res://Audio/BackgroundMusic.mp3" id="5_58pa3"]
@@ -120,11 +120,6 @@ shape = SubResource("RectangleShape2D_euhyg")
 
 [node name="LevelSucces" type="AudioStreamPlayer2D" parent="." unique_id=1202948004]
 stream = ExtResource("4_vxw10")
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=596928184]
-stream = ExtResource("5_58pa3")
-volume_db = -14.523
-autoplay = true
 
 [connection signal="all_shapes_completed" from="." to="." method="_on_all_shapes_completed"]
 [connection signal="timer_expired" from="." to="." method="_on_timer_expired"]

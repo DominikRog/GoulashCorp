@@ -19,7 +19,7 @@ var acts = {
 	2: {
 		"character": "farmer",
 		"next_character": "merchant",
-		"shapes": ["coin", "chest"],  # Placeholder - will be defined later
+		"shapes": ["Clue_Merchant_1", "Clue_Merchant_2"],
 		"question": "Where did your fortune come from?",
 		"answers": [
 			{"text": "Trading goods in the market", "correct": true},
@@ -32,7 +32,7 @@ var acts = {
 	3: {
 		"character": "merchant",
 		"next_character": "guardsman",
-		"shapes": ["sword", "shield"],  # Placeholder - will be defined later
+		"shapes": ["Clue_Guard_1", "Clue_Guard_2"],
 		"question": "What is your duty?",
 		"answers": [
 			{"text": "Protect the realm from threats", "correct": true},
@@ -45,7 +45,7 @@ var acts = {
 	4: {
 		"character": "guardsman",
 		"next_character": "jester",
-		"shapes": ["mask", "bells"],  # Placeholder - will be defined later
+		"shapes": ["Clue_Jester_1", "Clue_Jester_2"],
 		"question": "How do you move through the court?",
 		"answers": [
 			{"text": "With laughter and hidden truths", "correct": true},
@@ -58,7 +58,7 @@ var acts = {
 	5: {
 		"character": "jester",
 		"next_character": "queen",
-		"shapes": ["crown", "scepter"],  # Placeholder - will be defined later
+		"shapes": ["Clue_Queen_1", "Clue_Queen_2"],
 		"question": "Who sits beside the king?",
 		"answers": [
 			{"text": "The Queen, with grace and power", "correct": true},

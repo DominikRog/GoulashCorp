@@ -42,13 +42,23 @@ var _u: float = 0.0
 var _prev_pos: Vector2 = Vector2.ZERO
 # ---------------------------
 
+# saved collision state (so we can disable during "dead")
+var _saved_layer: int = 0
+var _saved_mask: int = 0
+
 var _anim_time: float = 0.0
 @onready var sprite: Sprite2D = $Sprite2D
 
 func _ready() -> void:
 	add_to_group("goblin")
+
+	# zapamiętaj kolizje goblina (co masz ustawione w edytorze)
+	_saved_layer = collision_layer
+	_saved_mask = collision_mask
+
 	visible = false
 	active = false
+	_set_collision_enabled(false)
 
 	if puzzle_manager == null:
 		puzzle_manager = get_parent()
@@ -76,8 +86,10 @@ func _physics_process(delta: float) -> void:
 # ============================================================
 
 func _spawn_after_delay(delay: float) -> void:
+	# "martwy" stan: nie przeszkadza niczym
 	active = false
 	visible = false
+	_set_collision_enabled(false)
 	_release_tile()
 
 	await get_tree().create_timer(max(0.0, delay)).timeout
@@ -90,8 +102,10 @@ func _spawn_after_delay(delay: float) -> void:
 
 	visible = true
 	active = true
+	_set_collision_enabled(true)
 
 func on_punched() -> void:
+	# natychmiast zniknij + wyłącz kolizję, żeby nie zostawał "niewidzialny klocek"
 	if not active:
 		return
 	_spawn_after_delay(respawn_delay)
@@ -99,8 +113,27 @@ func on_punched() -> void:
 func reset_goblin(first_delay: float = 5.0) -> void:
 	active = false
 	visible = false
+	_set_collision_enabled(false)
 	_release_tile()
 	_spawn_after_delay(first_delay)
+
+# ============================================================
+# Collision enable/disable (FIX: no invisible collider after death)
+# ============================================================
+
+func _set_collision_enabled(enabled: bool) -> void:
+	if enabled:
+		collision_layer = _saved_layer
+		collision_mask = _saved_mask
+	else:
+		collision_layer = 0
+		collision_mask = 0
+
+	# 100% pewności: wyłącz też wszystkie shape'y (nawet jeśli są zagnieżdżone)
+	for ch in find_children("", "CollisionShape2D", true, false):
+		(ch as CollisionShape2D).disabled = not enabled
+	for ch in find_children("", "CollisionPolygon2D", true, false):
+		(ch as CollisionPolygon2D).disabled = not enabled
 
 # ============================================================
 # PENTAGRAM movement
@@ -122,12 +155,12 @@ func _build_pentagram() -> void:
 	var max_ry: float = max(40.0, (bottom - top) * 0.5)
 	var max_r: float = min(max_rx, max_ry)
 
-	# jeśli ktoś ustawi outer za duży - przytnij
-	star_outer_radius = clamp(star_outer_radius, 40.0, max_r)
-	star_inner_radius = clamp(star_inner_radius, 10.0, star_outer_radius - 5.0)
-	star_roundness = clamp(star_roundness, 0.0, 0.5)
+	# NIE NADPISUJ exportów – użyj lokalnych wartości
+	var outer_r: float = clamp(star_outer_radius, 40.0, max_r)
+	var inner_r: float = clamp(star_inner_radius, 10.0, outer_r - 5.0)
+	var round: float = clamp(star_roundness, 0.0, 1.0)
 
-	_star_points = _make_pentagram_points(center)
+	_star_points = _make_pentagram_points(center, outer_r, inner_r, round)
 
 func _follow_pentagram(delta: float) -> void:
 	_build_pentagram()
@@ -144,13 +177,14 @@ func _follow_pentagram(delta: float) -> void:
 	# goblin jako "duch toru"
 	global_position = new_pos
 
-func _make_pentagram_points(center: Vector2) -> PackedVector2Array:
+func _make_pentagram_points(center: Vector2, outer_r: float, inner_r: float, round: float) -> PackedVector2Array:
 	var pts: PackedVector2Array = PackedVector2Array()
 	var start_angle: float = -PI * 0.5
 
+	# 10 punktów: outer/inner na zmianę
 	for i in range(10):
 		var outer: bool = (i % 2) == 0
-		var r: float = star_outer_radius if outer else star_inner_radius
+		var r: float = outer_r if outer else inner_r
 		var a: float = start_angle + TAU * float(i) / 10.0
 		pts.append(center + Vector2(cos(a), sin(a)) * r)
 
@@ -181,11 +215,13 @@ func _sample_star(u: float) -> Vector2:
 	var i2: int = (i1 + 1) % n
 	var i3: int = (i1 + 2) % n
 
+	# Catmull-Rom + opcjonalne "roundness"
 	var p: Vector2 = _catmull_rom(_star_points[i0], _star_points[i1], _star_points[i2], _star_points[i3], t)
 
-	if star_roundness > 0.0:
+	var round: float = clamp(star_roundness, 0.0, 1.0)
+	if round > 0.0:
 		var smooth: float = t * t * (3.0 - 2.0 * t)
-		var tt: float = lerp(t, smooth, star_roundness)
+		var tt: float = lerp(t, smooth, round)
 		p = _catmull_rom(_star_points[i0], _star_points[i1], _star_points[i2], _star_points[i3], tt)
 
 	return p
@@ -220,10 +256,9 @@ func _nearest_unplaced_tile_in_radius(r: float) -> RigidBody2D:
 
 			# tile.gd ma is_snapped (best-effort)
 			var snapped: bool = false
-			if rb.has_method("get"):
-				var v = rb.get("is_snapped")
-				if v is bool and v:
-					snapped = true
+			var v = rb.get("is_snapped")
+			if v is bool and v:
+				snapped = true
 			if snapped:
 				continue
 

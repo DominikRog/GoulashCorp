@@ -18,13 +18,15 @@ var is_snapping: bool = false
 
 @onready var player: CharacterBody2D = $Player
 @onready var mask_sprite: Sprite2D = $Mask
+@onready var control: Control = $Back
+@onready var popup: Control = $Popup
+@onready var question_label: Label = $Popup/QuestionText
+@onready var choices_container: VBoxContainer = $Popup/ChoicesContainer
 @onready var snap_sound: AudioStreamPlayer2D = $SnapSound
-@onready var popup: Control = $UI/Popup
-@onready var control: Control = $Control
-@onready var question_label: Label = $UI/Popup/Panel/MarginContainer/VBoxContainer/QuestionText
-@onready var choices_container: VBoxContainer = $UI/Popup/Panel/MarginContainer/VBoxContainer/ChoicesContainer
+
 
 func _ready():
+	MusicManager.enter_menu_or_dialogue()
 	# Calculate positions: player at 1/3, mask at 2/3
 	player_entrance_position = Vector2(play_area_size.x / 3.0, play_area_size.y / 2.0)
 	mask_base_position = Vector2(play_area_size.x * 2.0 / 3.0, play_area_size.y / 2.0)
@@ -44,6 +46,9 @@ func _ready():
 	if player:
 		player.visible = false
 		player.can_move = false
+
+		# Set player sprite to current character (before possession)
+		update_player_sprite()
 
 	# Show popup immediately
 	show_mind_puzzle()
@@ -202,6 +207,28 @@ func load_mask_sprite(character_name: String):
 			img.fill(Color(1.0, 0.8, 0.2, 1.0))  # Golden color for mask
 			mask_sprite.texture = ImageTexture.create_from_image(img)
 		print("Mask sprite not found: " + mask_path + " (using fallback)")
+
+func update_player_sprite():
+	"""Update player sprite to current character from GameManager"""
+	if not player:
+		return
+
+	var sprite = player.get_node_or_null("Sprite2D")
+	if not sprite:
+		return
+
+	# Get current character from GameManager
+	var character_name = GameManager.current_character
+	if character_name.is_empty():
+		character_name = "demon"  # Default fallback
+
+	# Try to load character sprite
+	var sprite_path = "res://Assets/" + character_name + "_full.png"
+	if ResourceLoader.exists(sprite_path):
+		sprite.texture = load(sprite_path)
+	else:
+		# Fallback: keep current sprite
+		print("Character sprite not found: " + sprite_path)
 
 func swap_character_sprite(character_name: String):
 	"""Swap player sprite to new character (instant for now)"""

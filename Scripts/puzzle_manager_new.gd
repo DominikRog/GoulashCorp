@@ -8,7 +8,7 @@ extends Node2D
 
 # --- VORONOI CUTTING ---
 @export var use_voronoi: bool = true  # Toggle between old grid system and new Voronoi
-@export var num_pieces: int = 9  # Number of pieces to cut shape into
+@export var num_pieces: int = 8  # Number of pieces to cut shape into
 @export var debug_show_boundaries: bool = false  # Draw piece boundaries for debugging
 var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 # -----------------------
@@ -41,7 +41,7 @@ var timer_active: bool = false
 @onready var shape_display: Node2D = $ShapeDisplay
 @onready var player: CharacterBody2D = $Player
 @onready var all_snaped_sfx: AudioStreamPlayer2D = $LevelSucces
-@onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
+#@onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
 
 @onready var goblin: CharacterBody2D = $Goblin
 
@@ -61,11 +61,7 @@ func _enter_tree() -> void:
 		g.set("puzzle_manager", self)
 
 func _ready():
-	MusicManager.fade_to(-40, 0.6)
-	level_music.volume_db = -40.0
-	level_music.play()
-	var t := create_tween()
-	t.tween_property(level_music, "volume_db", -22.0, 0.6)
+	MusicManager.enter_level(1.0)
 	# --- Set window resolution to 320x180 (pixel-art friendly) ---
 	_apply_window_settings()
 	player.entrance_completed.connect(_on_player_entrance_completed)
@@ -95,6 +91,9 @@ func _ready():
 		player.visible = false
 		player.can_move = false
 
+		# Set player sprite based on current character
+		_update_player_sprite()
+
 	# Start with first shape
 	start_next_shape()
 
@@ -114,6 +113,8 @@ func _physics_process(delta: float) -> void:
 
 func start_next_shape():
 	"""Begin the next shape puzzle"""
+	if goblin and goblin.has_method("reset_goblin"):
+		goblin.reset_goblin(goblin.spawn_delay_first) 
 	if current_shape_index >= current_shapes.size():
 		all_shapes_completed.emit()
 		return
@@ -416,6 +417,7 @@ func _on_tile_snapped(index: int):
 
 	if all_snapped:
 		all_snaped_sfx.play()
+		await all_snaped_sfx.finished
 		complete_current_shape()
 
 func complete_current_shape():
@@ -437,7 +439,7 @@ func complete_current_shape():
 	shape_completed.emit()
 
 	current_shape_index += 1
-	timer += 45.0
+	timer += 60.0
 
 	if current_shape_index >= current_shapes.size():
 		timer_active = false
@@ -528,6 +530,28 @@ func _disable_tile_collision(tile: RigidBody2D):
 			child.disabled = true
 		elif child is CollisionPolygon2D:
 			child.disabled = true
+
+func _update_player_sprite():
+	"""Update player sprite based on current character in GameManager"""
+	if not player:
+		return
+
+	var sprite = player.get_node_or_null("Sprite2D")
+	if not sprite:
+		return
+
+	# Get current character from GameManager
+	var character_name = GameManager.current_character
+	if character_name.is_empty():
+		character_name = "demon"  # Default fallback
+
+	# Try to load character sprite
+	var sprite_path = "res://Assets/" + character_name + "_full.png"
+	if ResourceLoader.exists(sprite_path):
+		sprite.texture = load(sprite_path)
+	else:
+		# Fallback: keep current sprite
+		print("Character sprite not found: " + sprite_path)
 
 func _apply_wall_repulsion(delta: float) -> void:
 	var rng: float = wall_repulsion_range
