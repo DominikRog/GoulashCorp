@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c8bvlay6wn3l5"]
 
 [ext_resource type="Script" uid="uid://q0eka1fi4fvo" path="res://Scripts/tile.gd" id="1_tile"]
+[ext_resource type="AudioStream" uid="uid://cjewwhk4dbecn" path="res://Audio/SUCCES.mp3" id="2_iof5j"]
 
 [node name="Tile" type="RigidBody2D" unique_id=107737862]
 collision_layer = 2
@@ -12,5 +13,8 @@ angular_damp = 5.0
 script = ExtResource("1_tile")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1947523176]
+
+[node name="CorrectTile" type="AudioStreamPlayer2D" parent="." unique_id=574856212]
+stream = ExtResource("2_iof5j")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

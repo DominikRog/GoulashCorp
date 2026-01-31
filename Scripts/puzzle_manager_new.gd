@@ -40,6 +40,7 @@ var timer_active: bool = false
 @onready var timer_label: Label = $UI/TimerLabel
 @onready var shape_display: Node2D = $ShapeDisplay
 @onready var player: CharacterBody2D = $Player
+@onready var all_snaped_sfx: AudioStreamPlayer2D = $LevelSucces
 
 signal all_shapes_completed
 signal timer_expired
@@ -419,6 +420,7 @@ func _on_tile_snapped(index: int):
 			break
 
 	if all_snapped:
+		all_snaped_sfx.play()
 		complete_current_shape()
 
 func complete_current_shape():
@@ -483,7 +485,7 @@ func update_timer_display():
 			timer_label.modulate = Color(1, 1, 1)
 
 func _on_all_shapes_completed():
-	get_tree().change_scene_to_file("res://Scenes/Dialogue.tscn")
+	get_tree().change_scene_to_file("res://Scenes/CollectionRoom.tscn")
 
 func _on_timer_expired():
 	restart_puzzle()
