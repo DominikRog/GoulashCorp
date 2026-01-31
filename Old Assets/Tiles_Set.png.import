@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cobartcy7rm2q"
-path="res://.godot/imported/Main_Dude.png-20d5dcd7f7e57e9a9eb1e74129d2c2a4.ctex"
+uid="uid://fgfijset0ft3"
+path="res://.godot/imported/Tiles_Set.png-4e9c2f794c03358b70d170a7484a368a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Main_Dude.png"
-dest_files=["res://.godot/imported/Main_Dude.png-20d5dcd7f7e57e9a9eb1e74129d2c2a4.ctex"]
+source_file="res://Old Assets/Tiles_Set.png"
+dest_files=["res://.godot/imported/Tiles_Set.png-4e9c2f794c03358b70d170a7484a368a.ctex"]
 
 [params]
 

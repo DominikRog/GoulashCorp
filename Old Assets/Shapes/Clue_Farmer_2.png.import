@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fgfijset0ft3"
-path="res://.godot/imported/Tiles_Set.png-b0adab1a84b90c361d6bc6a9353db6c2.ctex"
+uid="uid://bi1wh5yjn7upk"
+path="res://.godot/imported/Clue_Farmer_2.png-9cac2d3d0365b2ecb94a3d0a70e26645.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Tiles_Set.png"
-dest_files=["res://.godot/imported/Tiles_Set.png-b0adab1a84b90c361d6bc6a9353db6c2.ctex"]
+source_file="res://Old Assets/Shapes/Clue_Farmer_2.png"
+dest_files=["res://.godot/imported/Clue_Farmer_2.png-9cac2d3d0365b2ecb94a3d0a70e26645.ctex"]
 
 [params]
 
