@@ -1,7 +1,28 @@
 [gd_scene format=3 uid="uid://bgneff5q81fuk"]
 
 [ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
+[ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Assets/Tiles_Set.png" id="2_euhyg"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vxw10"]
+texture = ExtResource("2_euhyg")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+8:0/0 = 0
+9:0/0 = 0
+10:0/0 = 0
+11:0/0 = 0
+12:0/0 = 0
+13:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_58pa3"]
+sources/0 = SubResource("TileSetAtlasSource_vxw10")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
 size = Vector2(20, 720)
@@ -14,21 +35,27 @@ size = Vector2(20, 1320)
 
 [node name="PuzzleGame" type="Node2D" unique_id=1909076384]
 script = ExtResource("1_ih7j2")
-play_area_size = Vector2(320, 180)
+play_area_size = Vector2(320, 176)
+target_window_size = Vector2i(320, 176)
 
 [node name="Background" type="ColorRect" parent="." unique_id=1727455824]
 offset_right = 320.0
-offset_bottom = 180.0
-color = Color(0.15, 0.15, 0.2, 1)
+offset_bottom = 176.0
+color = Color(0, 0, 0, 1)
 
 [node name="PlayArea" type="ColorRect" parent="." unique_id=1348157393]
 offset_right = 320.0
-offset_bottom = 180.0
-color = Color(0.2, 0.22, 0.28, 1)
+offset_bottom = 176.0
+color = Color(0, 0, 0, 1)
+
+[node name="TileMap" type="TileMap" parent="." unique_id=973133123]
+tile_set = SubResource("TileSet_58pa3")
+format = 2
+layer_0/tile_data = PackedInt32Array(655379, 458752, 0, 655360, 393216, 0, 589843, 851968, 0, 524307, 851968, 0, 458771, 851968, 0, 393235, 851968, 0, 327699, 851968, 0, 131091, 851968, 0, 65555, 851968, 0, 19, 524288, 0, 18, 720896, 0, 17, 720896, 0, 16, 720896, 0, 15, 720896, 0, 14, 720896, 0, 13, 720896, 0, 12, 720896, 0, 11, 720896, 0, 10, 720896, 0, 9, 720896, 0, 8, 720896, 0, 7, 720896, 0, 6, 720896, 0, 5, 720896, 0, 4, 720896, 0, 3, 720896, 0, 2, 720896, 0, 1, 720896, 0, 0, 589824, 0, 65536, 786432, 0, 131072, 786432, 0, 196608, 786432, 0, 262144, 786432, 0, 327680, 786432, 0, 393216, 786432, 0, 458752, 786432, 0, 524288, 786432, 0, 589824, 786432, 0, 262163, 851968, 0, 196627, 851968, 0, 655361, 655360, 0, 655362, 655360, 0, 655363, 655360, 0, 655364, 655360, 0, 655365, 655360, 0, 655366, 655360, 0, 655367, 655360, 0, 655368, 655360, 0, 655369, 655360, 0, 655370, 655360, 0, 655371, 655360, 0, 655372, 655360, 0, 655373, 655360, 0, 655374, 655360, 0, 655375, 655360, 0, 655376, 655360, 0, 655377, 655360, 0, 655378, 655360, 0, 65538, 327680, 0, 196614, 196608, 0, 327684, 65536, 0, 458754, 196608, 0, 458757, 262144, 0, 589835, 131072, 0, 524297, 262144, 0, 458767, 327680, 0, 589842, 262144, 0, 196624, 131072, 0, 131083, 196608, 0, 262158, 131072, 0, 65551, 262144, 0, 196618, 262144, 0, 589827, 65536, 0, 65543, 327680, 0)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=675360286]
 anchor_mode = 0
-zoom = Vector2(4, 4)
+zoom = Vector2(4, 4.1)
 
 [node name="Player" parent="." unique_id=79805838 instance=ExtResource("2_player")]
 position = Vector2(160, 90)
@@ -65,20 +92,20 @@ collision_layer = 4
 collision_mask = 3
 
 [node name="LeftWall" type="CollisionShape2D" parent="Walls" unique_id=1818404958]
-position = Vector2(-10, 360)
+position = Vector2(8, 360)
 shape = SubResource("RectangleShape2D_walls")
 
 [node name="RightWall" type="CollisionShape2D" parent="Walls" unique_id=1863646246]
-position = Vector2(1290, 360)
+position = Vector2(1272, 360)
 shape = SubResource("RectangleShape2D_walls")
 
 [node name="TopWall" type="CollisionShape2D" parent="Walls" unique_id=1282043946]
-position = Vector2(640, -10)
+position = Vector2(640, 8)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_ih7j2")
 
 [node name="BottomWall" type="CollisionShape2D" parent="Walls" unique_id=500200234]
-position = Vector2(640, 730)
+position = Vector2(640, 696)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_euhyg")
 
