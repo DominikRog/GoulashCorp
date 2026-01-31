@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bgneff5q81fuk"]
+[gd_scene format=3 uid="uid://ew0yy2yei8vf"]
 
 [ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
