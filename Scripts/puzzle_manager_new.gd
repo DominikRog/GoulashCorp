@@ -37,6 +37,7 @@ var shape_center: Vector2 = Vector2.ZERO
 var timer: float = 0.0
 var timer_active: bool = false
 
+@onready var act_label: Label = $UI/ActLabel
 @onready var timer_label: Label = $UI/TimerLabel
 @onready var shape_display: Node2D = $ShapeDisplay
 @onready var player: CharacterBody2D = $Player
@@ -77,6 +78,8 @@ func _ready():
 	if act_data.is_empty():
 		push_error("No act data found!")
 		return
+	update_label_display()
+		
 
 	var shapes_data = act_data.get("shapes", [])
 	current_shapes.assign(shapes_data)
@@ -450,6 +453,8 @@ func complete_current_shape():
 func _input(event):
 	if event.is_action_pressed("DebugContinue"):
 		complete_current_shape()
+	if event.is_action_pressed("Restart"):
+		restart_puzzle()
 
 func restart_puzzle():
 	if player:
@@ -472,6 +477,12 @@ func restart_puzzle():
 
 	current_shape_index = max(0, current_shape_index)
 	start_next_shape()
+
+func update_label_display():
+	if not act_label:
+		return
+	var act_num = GameManager.current_act
+	act_label.text = "ACT %d" % act_num
 
 func update_timer_display():
 	if timer_label:
