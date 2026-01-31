@@ -9,6 +9,7 @@ extends Node2D
 var current_shapes: Array[String] = []
 var current_shape_index: int = 0
 var tiles: Array[RigidBody2D] = []
+var tile_slots: Array[Node2D] = []
 var shape_center: Vector2 = Vector2.ZERO
 var timer: float = 0.0
 var timer_active: bool = false
@@ -127,33 +128,70 @@ func spawn_and_scatter_tiles(shape_name: String):
 			var pos = shape_center + Vector2(x * 16 - 16, y * 16 - 16)
 			correct_positions.append(pos)
 
-	# Create tiles
+	# Create tile slots (render behind tiles)
+	create_tile_slots(correct_positions)
+
+	# Create tiles at their correct grid positions first
 	for i in range(9):
 		var tile = tile_scene.instantiate()
-		add_child(tile)
 
 		# Calculate which part of the 48x48 texture this tile uses
 		var tile_x = i % 3
 		var tile_y = i / 3
 		var tile_texture = extract_tile_texture(shape_texture, tile_x, tile_y)
 
-		# Setup tile
-		tile.setup(shape_name, i, correct_positions[i], tile_texture)
+		# Setup tile data BEFORE adding to tree
+		tile.shape_id = shape_name
+		tile.tile_index = i
+		tile.correct_position = correct_positions[i]
 
-		# Scatter to random position
-		var scatter_pos = get_random_scatter_position()
-		tile.scatter_to(scatter_pos)
+		# Add to tree (this triggers _ready)
+		add_child(tile)
+
+		# Set texture/sprite after node is in tree
+		var sprite = tile.get_node("Sprite2D")
+		if tile_texture:
+			sprite.texture = tile_texture
+		else:
+			# Placeholder: colored square
+			var color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0), 1.0)
+			var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+			img.fill(color)
+			var texture = ImageTexture.create_from_image(img)
+			sprite.texture = texture
+
+		# Position tile at its CORRECT position in the 3x3 grid
+		tile.global_position = correct_positions[i]
+
+		# FREEZE tiles immediately to prevent any physics movement before scatter
+		tile.freeze = true
 
 		# Connect snapped signal
 		tile.tile_snapped.connect(_on_tile_snapped)
 
 		tiles.append(tile)
 
-	# Show player after 1 second delay (after splitout animation)
-	await get_tree().create_timer(1.0).timeout
+	# Wait a moment so tiles are visible in grid formation
+	await get_tree().create_timer(0.3).timeout
+
+	# Now scatter them from their grid positions with velocity
+	for tile in tiles:
+		# Unfreeze and enable collision for tiles
+		tile.freeze = false
+		tile.collision_layer = 2
+		tile.collision_mask = 7
+
+		var scatter_pos = get_random_scatter_position()
+		tile.scatter_to(scatter_pos)
+
+	# Show player after 2.0 second delay (let tiles scatter and settle)
+	await get_tree().create_timer(2.0).timeout
 	if player:
-		player.visible = true
-		player.can_move = true
+		# Player enters from bottom
+		var entry_pos = Vector2(shape_center.x, play_area_size.y + 50)
+		# Target is below the shape with offset
+		var target_pos = Vector2(shape_center.x, shape_center.y + 60)
+		player.start_entrance(entry_pos, target_pos)
 
 func load_shape_texture(shape_name: String) -> Texture2D:
 	"""Load 48x48 shape texture from Assets/Shapes/"""
@@ -186,18 +224,32 @@ func get_random_scatter_position() -> Vector2:
 		var y = randf_range(margin, play_area_size.y - margin)
 		var pos = Vector2(x, y)
 
-		# Ensure it's far enough from center
-		if pos.distance_to(shape_center) > 100:
+		# Ensure it's far enough from center (increased distance)
+		if pos.distance_to(shape_center) > 150:
 			return pos
 
 		attempts += 1
 
-	# Fallback
-	return Vector2(randf_range(margin, play_area_size.x - margin),
-				   randf_range(margin, play_area_size.y - margin))
+	# Fallback - ensure good spread in all directions
+	var angle = randf() * TAU  # Random angle in radians (0 to 2*PI)
+	var distance = randf_range(150, 250)  # Distance from center
+	return shape_center + Vector2(cos(angle), sin(angle)) * distance
 
-func _on_tile_snapped():
+func create_tile_slots(positions: Array[Vector2]):
+	"""Create visual slot indicators at tile positions"""
+	for i in range(positions.size()):
+		var slot = Node2D.new()
+		slot.set_script(load("res://Scripts/tile_slot.gd"))
+		add_child(slot)
+		slot.setup(i, positions[i])
+		tile_slots.append(slot)
+
+func _on_tile_snapped(index: int):
 	"""Called when a tile snaps into place"""
+	# Update slot visual
+	if index < tile_slots.size():
+		tile_slots[index].set_filled(true)
+
 	# Check if all tiles are snapped
 	var all_snapped = true
 	for tile in tiles:
@@ -221,6 +273,11 @@ func complete_current_shape():
 	for tile in tiles:
 		tile.queue_free()
 	tiles.clear()
+
+	# Clear slots
+	for slot in tile_slots:
+		slot.queue_free()
+	tile_slots.clear()
 
 	# Update game state
 	GameManager.complete_shape(shape_name)
@@ -247,6 +304,11 @@ func restart_puzzle():
 	for tile in tiles:
 		tile.queue_free()
 	tiles.clear()
+
+	# Clear slots
+	for slot in tile_slots:
+		slot.queue_free()
+	tile_slots.clear()
 
 	# Reset timer
 	var act_data = GameManager.get_current_act_data()
