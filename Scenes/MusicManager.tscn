@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://d30mvo5r52g6r"]
 
-[ext_resource type="Script" uid="uid://byuom14w0n4cf" path="res://Scenes/music_manager.gd" id="1_6b4sy"]
+[ext_resource type="Script" uid="uid://byuom14w0n4cf" path="res://Scripts/music_manager.gd" id="1_6b4sy"]
 [ext_resource type="AudioStream" uid="uid://te76novqqrgl" path="res://Audio/UiMusic.mp3" id="2_4y3dx"]
 [ext_resource type="AudioStream" uid="uid://de23bwkonenvn" path="res://Audio/BackgroundMusic.mp3" id="3_4y3dx"]
 

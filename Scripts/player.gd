@@ -18,18 +18,18 @@ extends CharacterBody2D
 @export var max_pull_speed: float = 120.0
 # ------------------------------
 
-# --- NEW: manual rotation controls (Q/E) ---
-@export var rotate_speed_degrees_per_sec: float = 140.0   # jak szybko obraca podczas TRZYMANIA Q/E
-@export var rotate_damp_boost: float = 6.0                # dodatkowe tłumienie tylko na czas obracania (mniej drżenia)
-@export var freeze_tile_while_rotating: bool = false      # zwykle false, bo chcesz dalej pchać/ciągnąć; damp robi robotę
-# ------------------------------------------
+# --- manual rotation controls (Q/E) ---
+@export var rotate_speed_degrees_per_sec: float = 200.0
+@export var rotate_damp_boost: float = 6.0
+@export var freeze_tile_while_rotating: bool = false
+# -------------------------------------
 
-# --- NEW: punch (P) ---
+# --- punch (P) ---
 @export var punch_range: float = 24.0
-@export var punch_radius: float = 10.0
-@export var punch_strength: float = 520.0   # <-- SŁABSZE niż wcześniej
+@export var punch_radius: float = 18.0
+@export var punch_strength: float = 520.0
 @export var punch_cooldown: float = 0.18
-# ----------------------
+# ----------------
 
 # --- entrance smoothness ---
 @export var entrance_stop_distance: float = 0.5
@@ -62,6 +62,7 @@ signal entrance_completed
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+
 
 func _physics_process(delta: float) -> void:
 	# timers
@@ -134,12 +135,10 @@ func _physics_process(delta: float) -> void:
 	if grabbed_tile != null:
 		_pull_tile(delta)
 
-	# --- Manual rotation ONLY while grabbing + holding space ---
-	# (czyli tylko gdy grabbed_tile != null, bo to wymaga grab)
+	# --- Manual rotation ONLY while grabbing ---
 	if grabbed_tile != null:
 		_manual_rotate_tile(delta)
 	else:
-		# jeśli nie trzymamy tile, upewnij się że nie zostawiliśmy boostów
 		if _rotating_now:
 			_stop_rotate_boost()
 
@@ -149,14 +148,19 @@ func _physics_process(delta: float) -> void:
 			pass
 		else:
 			for i in range(get_slide_collision_count()):
-				var collision = get_slide_collision(i)
-				var collider = collision.get_collider()
+				var collision := get_slide_collision(i)
+				var collider := collision.get_collider()
 				if collider is RigidBody2D:
-					if grabbed_tile != null and collider == grabbed_tile:
+					var rb := collider as RigidBody2D
+
+					# never push the grabbed tile (prevents fighting/jitter)
+					if grabbed_tile != null and rb == grabbed_tile:
 						continue
+
+					# IMPORTANT: impulse should NOT be multiplied by delta
 					var push_direction: Vector2 = collision.get_normal() * -1.0
-					var impulse: Vector2 = push_direction * (push_force * delta)
-					(collider as RigidBody2D).apply_central_impulse(impulse)
+					rb.apply_central_impulse(push_direction * push_force)
+
 
 func _try_grab_tile() -> void:
 	if grab_area == null:
@@ -195,7 +199,7 @@ func _try_grab_tile() -> void:
 	else:
 		grab_dir = v.normalized()
 
-	# prevent pushing player around
+	# prevent tile from pushing player around
 	grabbed_tile.add_collision_exception_with(self)
 
 	# boost damping while grabbing (stability)
@@ -205,7 +209,6 @@ func _try_grab_tile() -> void:
 		grabbed_tile.linear_damp = _grabbed_original_linear_damp + grab_damp_boost
 		grabbed_tile.angular_damp = _grabbed_original_angular_damp + grab_damp_boost
 
-	# IMPORTANT: no auto rotation alignment here anymore (per your request)
 
 func _manual_rotate_tile(delta: float) -> void:
 	if grabbed_tile == null:
@@ -225,7 +228,6 @@ func _manual_rotate_tile(delta: float) -> void:
 		dir_sign = 1.0
 
 	if dir_sign == 0.0:
-		# stop extra boost when not rotating
 		if _rotating_now:
 			_stop_rotate_boost()
 		return
@@ -243,20 +245,25 @@ func _manual_rotate_tile(delta: float) -> void:
 		grabbed_tile.freeze = true
 
 	var step_rad: float = deg_to_rad(rotate_speed_degrees_per_sec) * delta * dir_sign
-	grabbed_tile.rotation += step_rad
+
+	# safer inside physics step:
+	grabbed_tile.set_deferred("rotation", grabbed_tile.rotation + step_rad)
 
 	if freeze_tile_while_rotating:
 		grabbed_tile.freeze = was_frozen
+
 
 func _start_rotate_boost() -> void:
 	if grabbed_tile == null:
 		return
 	_rotating_now = true
+	# save current (already includes grab_damp_boost!)
 	_rot_saved_linear_damp = grabbed_tile.linear_damp
 	_rot_saved_angular_damp = grabbed_tile.angular_damp
 	if rotate_damp_boost > 0.0:
 		grabbed_tile.linear_damp = _rot_saved_linear_damp + rotate_damp_boost
 		grabbed_tile.angular_damp = _rot_saved_angular_damp + rotate_damp_boost
+
 
 func _stop_rotate_boost() -> void:
 	if grabbed_tile == null:
@@ -266,6 +273,7 @@ func _stop_rotate_boost() -> void:
 		grabbed_tile.linear_damp = _rot_saved_linear_damp
 		grabbed_tile.angular_damp = _rot_saved_angular_damp
 	_rotating_now = false
+
 
 func _pull_tile(delta: float) -> void:
 	if grabbed_tile == null:
@@ -298,22 +306,23 @@ func _pull_tile(delta: float) -> void:
 	if vlen > max_pull_speed:
 		grabbed_tile.linear_velocity = vel * (max_pull_speed / vlen)
 
+
 func _release_tile() -> void:
 	if grabbed_tile == null:
 		return
 
-	# stop rotate boost if active
 	if _rotating_now:
 		_stop_rotate_boost()
 
 	grabbed_tile.remove_collision_exception_with(self)
 
-	# restore damp if changed
+	# restore damp if changed by grab
 	if grab_damp_boost > 0.0:
 		grabbed_tile.linear_damp = _grabbed_original_linear_damp
 		grabbed_tile.angular_damp = _grabbed_original_angular_damp
 
 	grabbed_tile = null
+
 
 func _do_punch() -> void:
 	_punch_lock_timer = punch_cooldown
@@ -325,10 +334,10 @@ func _do_punch() -> void:
 
 	var center: Vector2 = global_position + dir * punch_range
 
-	var shape := CircleShape2D.new()
+	var shape: CircleShape2D = CircleShape2D.new()
 	shape.radius = punch_radius
 
-	var params := PhysicsShapeQueryParameters2D.new()
+	var params: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
 	params.shape = shape
 	params.transform = Transform2D(0.0, center)
 	params.collide_with_areas = false
@@ -343,6 +352,12 @@ func _do_punch() -> void:
 
 	for hit in results:
 		var obj = hit.get("collider")
+
+		# punch goblin (robust: no group needed)
+		if obj != null and obj is Node and (obj as Node).has_method("on_punched"):
+			(obj as Node).call("on_punched")
+			return
+
 		var rb: RigidBody2D = obj as RigidBody2D
 		if rb == null:
 			continue
@@ -363,6 +378,7 @@ func _do_punch() -> void:
 
 	best_rb.apply_central_impulse(dir * punch_strength)
 
+
 func start_entrance(from_pos: Vector2, to_pos: Vector2) -> void:
 	global_position = from_pos
 	entrance_target = to_pos
@@ -375,6 +391,7 @@ func start_entrance(from_pos: Vector2, to_pos: Vector2) -> void:
 
 	if grabbed_tile != null:
 		_release_tile()
+
 
 func get_entry_position(screen_size: Vector2) -> Vector2:
 	var side = randi() % 4

@@ -4,6 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Old Assets/Tiles_Set.png" id="2_euhyg"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/Player.tscn" id="2_player"]
 [ext_resource type="AudioStream" uid="uid://cjpvoyiwb0rs3" path="res://Audio/LevelComplete.mp3" id="4_vxw10"]
+[ext_resource type="AudioStream" uid="uid://de23bwkonenvn" path="res://Audio/BackgroundMusic.mp3" id="5_58pa3"]
+[ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://bff8vbws47nyt" path="res://Scenes/goblin.tscn" id="4_vxw10"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vxw10"]
 texture = ExtResource("2_euhyg")
@@ -63,6 +66,8 @@ zoom = Vector2(4, 4.1)
 
 [node name="Player" parent="." unique_id=79805838 instance=ExtResource("2_player")]
 position = Vector2(160, 90)
+
+[node name="Goblin" parent="." unique_id=1146802258 instance=ExtResource("4_vxw10")]
 
 [node name="ShapeDisplay" type="Node2D" parent="." unique_id=735189848]
 

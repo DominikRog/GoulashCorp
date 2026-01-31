@@ -109,7 +109,7 @@ func _on_choice_selected(is_correct: bool):
 		# Hide popup and start player entrance
 		popup.visible = false
 		has_answered = true
-		back.visible = false
+		control.visible = false
 		start_player_entrance()
 	else:
 		# Wrong answer - restart act
