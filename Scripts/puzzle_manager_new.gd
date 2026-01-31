@@ -431,14 +431,12 @@ func _apply_tile_friction(tile: RigidBody2D):
 	# PhysicsMaterial in Godot 4 (2D) is applied via physics_material_override on CollisionObject2D (RigidBody2D here)
 	var mat: PhysicsMaterial = PhysicsMaterial.new()
 	mat.friction = tile_friction
-	mat.bounce = tile_bounce
+	mat.bounce = 0.0  # No bounce for puzzle feel
 
 	tile.physics_material_override = mat
 
-	# Optional but very helpful: reduces "ice sliding" by damping movement/rotation
-	# You can tune these or export them if you want later.
-	tile.linear_damp = 10.0
-	tile.angular_damp = 10.0
+	# Keep the damping values set in tile.gd _ready() for natural physics feel
+	# (linear_damp = 3.0, angular_damp = 2.0 for natural rotation)
 
 func _disable_tile_collision(tile: RigidBody2D):
 	# Easiest reliable way: remove it from all layers/masks so it stops blocking.
