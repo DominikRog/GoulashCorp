@@ -66,7 +66,6 @@ func _process(delta):
 		if timer <= 0:
 			timer_active = false
 			timer_expired.emit()
-			restart_puzzle()
 
 func start_next_shape():
 	"""Begin the next shape puzzle"""
