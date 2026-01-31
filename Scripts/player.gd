@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@export var speed_while_grabbing_multiplier: float = 0.45
+@export var speed_while_grabbing_multiplier: float = 0.55
 @export var speed := 110.0
 @export var animation_speed := 70.0
 @export var push_force := 100.0
@@ -10,7 +10,8 @@ extends CharacterBody2D
 @export var hold_distance: float = 17.0        # gdzie ma być tile względem gracza (w pikselach)
 @export var max_grab_distance: float = 40.0    # jak daleko może być tile od gracza zanim puścimy
 @export var grab_damp_boost: float = 8.0       # dodatkowy damp podczas trzymania
-@export var block_pushing_while_grabbing: bool = true
+@export var block_pushing_while_grabbing: bool = false  # <-- CHANGED DEFAULT
+# ------------------------------
 
 # --- stability while grabbing ---
 @export var pull_deadzone: float = 2.0         # martwa strefa (mniej drżenia)
@@ -27,8 +28,6 @@ var grabbed_tile: RigidBody2D = null
 var last_move_dir: Vector2 = Vector2.DOWN
 var _grabbed_original_linear_damp: float = 0.0
 var _grabbed_original_angular_damp: float = 0.0
-
-# NEW: direction of the grabbed tile relative to player at grab time (keeps it on the same side)
 var grab_dir: Vector2 = Vector2.DOWN
 # ----------------
 
@@ -95,13 +94,19 @@ func _physics_process(delta):
 	if grabbed_tile != null:
 		_pull_tile(delta)
 
-	# --- Push tiles (only when not grabbing, optionally) ---
+	# --- Push tiles ---
+	# We want the player to keep pushing OTHER tiles while grabbing.
+	# Only skip pushing when block_pushing_while_grabbing is true.
 	if can_move:
-		if (not block_pushing_while_grabbing) or grabbed_tile == null:
+		if block_pushing_while_grabbing and grabbed_tile != null:
+			# explicitly skip pushing while grabbing (optional behavior toggle)
+			pass
+		else:
 			for i in range(get_slide_collision_count()):
 				var collision = get_slide_collision(i)
 				var collider = collision.get_collider()
 				if collider is RigidBody2D:
+					# Never push the grabbed tile (prevents jitter / fighting the pull)
 					if grabbed_tile != null and collider == grabbed_tile:
 						continue
 					var push_direction: Vector2 = collision.get_normal() * -1.0
@@ -136,10 +141,9 @@ func _try_grab_tile():
 
 	grabbed_tile = best
 
-	# Keep tile on the same side it was grabbed from (INTUITIVE behavior)
+	# Keep tile on the same side it was grabbed from (intuitive)
 	var v: Vector2 = grabbed_tile.global_position - global_position
 	if v.length() < 0.001:
-		# fallback: use opposite of movement direction
 		grab_dir = Vector2.DOWN
 		var lm: float = last_move_dir.length()
 		if lm > 0.001:
@@ -170,7 +174,6 @@ func _pull_tile(delta: float):
 		_release_tile()
 		return
 
-	# Hold point based on grab_dir captured at grab time (not last_move_dir!)
 	var hold_point: Vector2 = global_position + grab_dir * hold_distance
 
 	var to_target: Vector2 = hold_point - grabbed_tile.global_position
