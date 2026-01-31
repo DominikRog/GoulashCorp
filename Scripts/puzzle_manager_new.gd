@@ -448,6 +448,10 @@ func complete_current_shape():
 	else:
 		start_next_shape()
 
+func _input(event):
+	if event.is_action_pressed("DebugContinue"):
+		complete_current_shape()
+
 func restart_puzzle():
 	if player:
 		player.visible = false
