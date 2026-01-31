@@ -1,8 +1,21 @@
 [gd_scene format=3 uid="uid://4010030flawg"]
 
-[ext_resource type="Script" path="res://Scripts/dialogue_manager.gd" id="1_dialogue"]
+[ext_resource type="Script" uid="uid://cr2rekdfi5pfv" path="res://Scripts/dialogue_manager.gd" id="1_dialogue"]
+[ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="2_2842h"]
 
-[node name="Dialogue" type="Control"]
+[sub_resource type="Gradient" id="Gradient_2842h"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.5625, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_cq6to"]
+gradient = SubResource("Gradient_2842h")
+fill = 1
+fill_from = Vector2(0.5014245, 0.4871795)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2842h"]
+
+[node name="Dialogue" type="Control" unique_id=232306232]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,34 +24,70 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_dialogue")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.1, 0.1, 0.12, 1)
+[node name="Background" type="TextureRect" parent="." unique_id=1207896944]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = SubResource("GradientTexture2D_cq6to")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="DemonFace" type="TextureRect" parent="." unique_id=1739360634]
+modulate = Color(1, 0, 0.08235294, 0.78431374)
+layout_mode = 0
+offset_left = 360.0
+offset_right = 627.0
+offset_bottom = 285.0
+scale = Vector2(2, 2)
+texture = ExtResource("2_2842h")
+
+[node name="DialogueText" type="Label" parent="." unique_id=813220841]
+layout_mode = 0
+offset_left = 113.0
+offset_top = 181.0
+offset_right = 1037.0
+offset_bottom = 571.0
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 24
+text = "Dialogue text goes here..."
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ChoicesContainer" type="VBoxContainer" parent="." unique_id=759964842]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 601.0
+offset_right = 1094.0
+offset_bottom = 601.0
+size_flags_vertical = 4
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Panel" type="Panel" parent="." unique_id=1546737233]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -200.0
-offset_right = 400.0
-offset_bottom = 200.0
+offset_left = -410.0
+offset_top = -190.0
+offset_right = 390.0
+offset_bottom = 210.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2842h")
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=1014184549]
+visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.112
+anchor_top = 0.17
+anchor_right = 1.1170001
+anchor_bottom = 1.3700001
+offset_left = -0.3999939
+offset_right = 0.39990234
+offset_bottom = -6.1035156e-05
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 30
@@ -46,20 +95,7 @@ theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 30
 theme_override_constants/margin_bottom = 30
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1522128501]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 30
-
-[node name="DialogueText" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 24
-text = "Dialogue text goes here..."
-autowrap_mode = 3
-vertical_alignment = 1
-
-[node name="ChoicesContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 15
-alignment = 1
