@@ -16,6 +16,14 @@ var mask_collected: bool = false
 var levitation_time: float = 0.0
 var is_snapping: bool = false
 
+# Typewriter effect variables
+var full_text: String = ""
+var current_char_index: float = 0.0
+var typewriter_speed: float = 0.07  # Seconds per character (higher = slower)
+var is_typing: bool = false
+var text_fully_displayed: bool = false
+var waiting_for_input: bool = false
+
 @onready var player: CharacterBody2D = $Player
 @onready var mask_sprite: Sprite2D = $Mask
 @onready var control: Control = $Control
@@ -54,6 +62,19 @@ func _ready():
 	show_mind_puzzle()
 
 func _process(delta):
+	# Typewriter effect
+	if is_typing:
+		current_char_index += delta / typewriter_speed
+		var chars_to_show = int(current_char_index)
+		if chars_to_show >= full_text.length():
+			# Finished typing
+			question_label.text = full_text
+			is_typing = false
+			text_fully_displayed = true
+			waiting_for_input = true
+		else:
+			question_label.text = full_text.substr(0, chars_to_show)
+
 	# Levitate mask (up and down)
 	if has_answered and not mask_collected and not is_snapping:
 		levitation_time += delta * levitation_speed
@@ -70,6 +91,33 @@ func _process(delta):
 		if distance <= collection_distance:
 			snap_mask_to_face()
 
+func _input(event: InputEvent) -> void:
+	if waiting_for_input and text_fully_displayed:
+		if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
+			# Show choices (keep text visible)
+			waiting_for_input = false
+			text_fully_displayed = false
+			choices_container.visible = true
+			# Focus first button
+			if choices_container.get_child_count() > 0:
+				var first_button = choices_container.get_child(0)
+				first_button.grab_focus()
+			# Mark input as handled to prevent immediate button press
+			get_viewport().set_input_as_handled()
+			return
+
+	# Number key shortcuts for choices
+	if choices_container.visible and not is_typing and not waiting_for_input:
+		if event is InputEventKey and event.pressed and not event.echo:
+			var keycode = event.keycode
+			if keycode >= KEY_1 and keycode <= KEY_9:
+				var index = keycode - KEY_1
+				if index < choices_container.get_child_count():
+					var button = choices_container.get_child(index)
+					if button is Button:
+						button.emit_signal("pressed")
+					get_viewport().set_input_as_handled()
+
 func show_mind_puzzle():
 	"""Display mind puzzle popup (80-90% of screen)"""
 	# Get current act data
@@ -78,19 +126,32 @@ func show_mind_puzzle():
 		push_error("No act data for mind puzzle!")
 		return
 
-	# Show completed shapes as hint
-	question_label.text = act_data.get("question", "")
+	# Start typewriter effect
+	start_typewriter(act_data.get("question", ""))
 
 	# Clear existing choices
 	clear_choices()
 
-	# Add answer choices
+	# Add answer choices (hidden initially)
 	var answers = act_data.get("answers", [])
 	for answer in answers:
 		add_choice_button(answer["text"], answer["correct"])
 
+	# Hide choices initially
+	choices_container.visible = false
+
 	# Show popup
 	popup.visible = true
+
+func start_typewriter(text: String):
+	"""Start typewriter effect for given text"""
+	full_text = text
+	current_char_index = 0
+	is_typing = true
+	text_fully_displayed = false
+	waiting_for_input = false
+	question_label.text = ""
+	choices_container.visible = false
 
 func clear_choices():
 	"""Remove all choice buttons"""
@@ -104,6 +165,7 @@ func add_choice_button(text: String, is_correct: bool):
 	button.custom_minimum_size = Vector2(220, 28)
 	button.add_theme_font_size_override("font_size", 24)
 	button.pressed.connect(_on_choice_selected.bind(is_correct))
+	button.focus_mode = Control.FOCUS_ALL
 	choices_container.add_child(button)
 
 func _on_choice_selected(is_correct: bool):
@@ -136,11 +198,6 @@ func snap_mask_to_face():
 		return
 
 	is_snapping = true
-
-	# Play snap sound with slight pitch variation
-	if snap_sound:
-		snap_sound.pitch_scale = randf_range(0.95, 1.05)
-		snap_sound.play()
 
 	# Create tween for smooth snap animation
 	var tween = create_tween()
