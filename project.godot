@@ -31,6 +31,10 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/aspect="expand"
 
+[gui]
+
+theme/custom_font="uid://c6hn7ivkthwuy"
+
 [input]
 
 ui_select={
