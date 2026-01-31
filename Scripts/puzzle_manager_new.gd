@@ -13,7 +13,11 @@ extends Node2D
 var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 # -----------------------
 
+<<<<<<< HEAD
 # --- window / scaling + tile friction + snapped collision behavior ---
+=======
+# --- NEW: window / scaling + tile friction + snapped collision behavior ---
+>>>>>>> f4f8926959aec6e72c41023f88487eef490ca5f3
 @export var target_window_size: Vector2i = Vector2i(320, 180)
 @export var use_integer_scale: bool = true
 @export var tile_friction: float = 2.5
@@ -585,6 +589,7 @@ func _disable_tile_collision(tile: RigidBody2D):
 		elif child is CollisionPolygon2D:
 			child.disabled = true
 
+<<<<<<< HEAD
 func _apply_wall_repulsion(delta: float) -> void:
 	# Repel tiles from the play area edges like a magnetic field.
 	# Stronger near the wall, fades to zero at wall_repulsion_range.
@@ -645,6 +650,8 @@ func _apply_wall_repulsion(delta: float) -> void:
 			# Scale by delta so it feels stable across FPS
 			tile.apply_central_force(force * delta)
 
+=======
+>>>>>>> f4f8926959aec6e72c41023f88487eef490ca5f3
 func setup_voronoi_collision(tile: RigidBody2D, piece):
 	"""Setup collision polygon from Voronoi piece boundary"""
 	# Remove existing collision shapes
