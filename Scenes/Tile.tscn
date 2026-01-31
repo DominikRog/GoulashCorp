@@ -11,6 +11,6 @@ linear_damp = 3.0
 angular_damp = 5.0
 script = ExtResource("1_tile")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1947523176]
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
