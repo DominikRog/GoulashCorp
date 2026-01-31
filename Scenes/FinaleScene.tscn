@@ -1,42 +1,44 @@
-[gd_scene load_steps=2 format=3 uid="uid://finale_scene_unique"]
+[gd_scene format=3 uid="uid://b03qb6ub184mu"]
 
-[ext_resource type="Script" path="res://Scripts/finale_scene.gd" id="1_finale"]
+[ext_resource type="Script" uid="uid://bfxqevjqirati" path="res://Scripts/finale_scene.gd" id="1_finale"]
 
-[node name="FinaleScene" type="Node2D"]
+[node name="FinaleScene" type="Node2D" unique_id=1987755848]
 script = ExtResource("1_finale")
 
-[node name="Background" type="ColorRect" parent="."]
-offset_right = 320.0
-offset_bottom = 176.0
+[node name="Background" type="ColorRect" parent="." unique_id=25327701]
+offset_left = -1274.0
+offset_top = -745.0
+offset_right = 1944.0
+offset_bottom = 1374.0
 color = Color(0, 0, 0, 1)
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(160, 88)
-zoom = Vector2(1, 1)
-
-[node name="King" type="Sprite2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1935199053]
 position = Vector2(160, 88)
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="King" type="Sprite2D" parent="." unique_id=581793306]
+position = Vector2(160, 88)
 
-[node name="DialogueLabel" type="Label" parent="UI"]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1750289526]
+
+[node name="DialogueLabel" type="Label" parent="UI" unique_id=635058672]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -80.0
-offset_top = -50.0
-offset_right = 80.0
-offset_bottom = -30.0
+offset_left = -204.0
+offset_top = -104.0
+offset_right = 9.0
+offset_bottom = -80.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 12
+scale = Vector2(2, 2)
+theme_override_font_sizes/font_size = 18
 text = "Kingdom is yours"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="EndScreen" type="ColorRect" parent="UI"]
+[node name="EndScreen" type="ColorRect" parent="UI" unique_id=569758251]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -44,20 +46,21 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="EndLabel" type="Label" parent="UI/EndScreen"]
+[node name="EndLabel" type="Label" parent="UI/EndScreen" unique_id=2121133680]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -50.0
-offset_top = -10.0
-offset_right = 50.0
-offset_bottom = 10.0
+offset_left = -97.0
+offset_top = -12.0
+offset_right = 5.0
+offset_bottom = 12.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 16
+scale = Vector2(2, 2)
+theme_override_font_sizes/font_size = 24
 text = "The End"
 horizontal_alignment = 1
 vertical_alignment = 1

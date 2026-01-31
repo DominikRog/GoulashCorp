@@ -188,8 +188,14 @@ func explode_king():
 			add_child(tile)
 
 			# Position at king's location (in grid formation) accounting for scale
-			var offset = Vector2(x * scaled_tile_size - (grid_cols * scaled_tile_size / 2.0),
-			                     y * scaled_tile_size - (grid_rows * scaled_tile_size / 2.0))
+			var total_width  = grid_cols * scaled_tile_size
+			var total_height = grid_rows * scaled_tile_size
+
+			var offset = Vector2(
+				x * scaled_tile_size + scaled_tile_size / 2.0 - total_width / 2.0,
+				y * scaled_tile_size + scaled_tile_size / 2.0 - total_height / 2.0
+			)
+
 			tile.global_position = king_pos + offset
 
 			# Extract tile texture
