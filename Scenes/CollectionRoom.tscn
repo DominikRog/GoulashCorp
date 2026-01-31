@@ -1,7 +1,8 @@
-[gd_scene format=3 uid="uid://b8y5xk2mpqr7p"]
+[gd_scene load_steps=4 format=3 uid="uid://b8y5xk2mpqr7p"]
 
 [ext_resource type="Script" path="res://Scripts/collection_room.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2"]
+[ext_resource type="AudioStream" uid="uid://cjewwhk4dbecn" path="res://Audio/SUCCES.mp3" id="3"]
 
 [node name="CollectionRoom" type="Node2D"]
 script = ExtResource("1")
@@ -23,6 +24,9 @@ visible = false
 [node name="Mask" type="Sprite2D" parent="."]
 position = Vector2(160, 67.5)
 visible = false
+
+[node name="SnapSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
