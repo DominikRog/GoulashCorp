@@ -2,8 +2,29 @@
 
 [ext_resource type="Script" uid="uid://bolf8k2cxx0f3" path="res://Scripts/collection_room.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Assets/Tiles_Set.png" id="2_1ws0g"]
 [ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="2_2mdl5"]
 [ext_resource type="AudioStream" uid="uid://cjewwhk4dbecn" path="res://Audio/SUCCES.mp3" id="3"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ntnhm"]
+texture = ExtResource("2_1ws0g")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+8:0/0 = 0
+9:0/0 = 0
+10:0/0 = 0
+11:0/0 = 0
+12:0/0 = 0
+13:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_fy1w0"]
+sources/0 = SubResource("TileSetAtlasSource_ntnhm")
 
 [sub_resource type="Gradient" id="Gradient_2842h"]
 interpolation_mode = 2
@@ -20,12 +41,18 @@ script = ExtResource("1")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1419852249]
 offset_right = 240.0
-offset_bottom = 135.0
-color = Color(0.15, 0.15, 0.2, 1)
+offset_bottom = 128.0
+color = Color(0, 0, 0, 1)
+
+[node name="TileMap" type="TileMap" parent="." unique_id=2079866984]
+tile_set = SubResource("TileSet_fy1w0")
+format = 2
+layer_0/tile_data = PackedInt32Array(14, 524288, 0, 0, 589824, 0, 458752, 393216, 0, 458766, 458752, 0, 458753, 655360, 0, 458754, 655360, 0, 458755, 655360, 0, 458756, 655360, 0, 458757, 655360, 0, 458758, 655360, 0, 458759, 655360, 0, 458760, 655360, 0, 458761, 655360, 0, 458762, 655360, 0, 458763, 655360, 0, 458764, 655360, 0, 458765, 655360, 0, 1, 720896, 0, 2, 720896, 0, 3, 720896, 0, 4, 720896, 0, 5, 720896, 0, 6, 720896, 0, 7, 720896, 0, 8, 720896, 0, 9, 720896, 0, 10, 720896, 0, 11, 720896, 0, 12, 720896, 0, 13, 720896, 0, 65536, 786432, 0, 131072, 786432, 0, 196608, 786432, 0, 262144, 786432, 0, 327680, 786432, 0, 393216, 786432, 0, 65550, 851968, 0, 131086, 851968, 0, 196622, 851968, 0, 262158, 851968, 0, 327694, 851968, 0, 393230, 851968, 0, 327682, 131072, 0, 196612, 262144, 0, 131074, 262144, 0, 65542, 262144, 0, 327685, 196608, 0, 393217, 196608, 0, 393219, 262144, 0, 262152, 327680, 0, 196614, 327680, 0, 131080, 196608, 0, 65545, 327680, 0, 393225, 65536, 0, 393224, 65536, 0, 262155, 0, 0, 131082, 327680, 0, 65548, 131072, 0, 196621, 131072, 0, 393229, 262144, 0, 393227, 196608, 0, 65539, 131072, 0)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=889155176]
 position = Vector2(120, 67.5)
-zoom = Vector2(5.34, 5.33)
+offset = Vector2(0, -3)
+zoom = Vector2(5.34, 5.6)
 
 [node name="Player" parent="." unique_id=1500009484 instance=ExtResource("2")]
 visible = false
@@ -36,6 +63,7 @@ visible = false
 position = Vector2(160, 67.5)
 
 [node name="Control" type="Control" parent="." unique_id=141267943]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_right = 240.0
