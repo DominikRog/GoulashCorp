@@ -13,6 +13,46 @@ gradient = SubResource("Gradient_2842h")
 fill = 1
 fill_from = Vector2(0.5014245, 0.4871795)
 
+[sub_resource type="Shader" id="Shader_pixelate"]
+code = "shader_type canvas_item;
+
+uniform float pixelation_amount : hint_range(1.0, 100.0) = 8.0;
+uniform int color_steps : hint_range(2, 32) = 8;
+uniform float breathe_speed : hint_range(0.1, 5.0) = 1.0;
+uniform float breathe_intensity : hint_range(0.0, 0.5) = 0.1;
+
+void fragment() {
+    // Breathing effect - pulse from center
+    vec2 center = vec2(0.5, 0.5);
+    float pulse = sin(TIME * breathe_speed) * breathe_intensity;
+    float scale = 1.0 + pulse;
+
+    // Apply breathing scale
+    vec2 uv = UV;
+    uv = center + (uv - center) * scale;
+
+    // Pixelate
+    vec2 pixel_size = vec2(1.0) / (TEXTURE_PIXEL_SIZE * pixelation_amount);
+    uv = floor(uv * pixel_size) / pixel_size;
+
+    // Get color
+    vec4 color = texture(TEXTURE, uv);
+
+    // Posterize/quantize colors
+    float steps = float(color_steps);
+    color.rgb = floor(color.rgb * steps) / steps;
+
+    COLOR = color;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pixelate"]
+shader = SubResource("Shader_pixelate")
+shader_parameter/pixelation_amount = 1.0
+shader_parameter/color_steps = 24
+shader_parameter/breathe_speed = 0.8
+shader_parameter/breathe_intensity = 0.15
+
 [node name="Dialogue" type="Control" unique_id=232306232]
 layout_mode = 3
 anchors_preset = 15
@@ -23,6 +63,7 @@ grow_vertical = 2
 script = ExtResource("1_dialogue")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1207896944]
+material = SubResource("ShaderMaterial_pixelate")
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 720.0
