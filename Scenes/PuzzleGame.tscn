@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ew0yy2yei8vf"]
 
-[ext_resource type="Script" uid="uid://1tkdwkylq1u1" path="res://Scripts/puzzle_manager.gd" id="1_puzzle"]
+[ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
@@ -13,7 +13,8 @@ size = Vector2(20, 1320)
 size = Vector2(20, 1320)
 
 [node name="PuzzleGame" type="Node2D" unique_id=1909076384]
-script = ExtResource("1_puzzle")
+script = ExtResource("1_ih7j2")
+play_area_size = Vector2(320, 180)
 
 [node name="Background" type="ColorRect" parent="." unique_id=1727455824]
 offset_right = 320.0
