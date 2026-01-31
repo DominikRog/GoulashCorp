@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bolf8k2cxx0f3" path="res://Scripts/collection_room.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Old Assets/Tiles_Set.png" id="2_1ws0g"]
+[ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="2_2mdl5"]
 [ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Old Assets/Tiles_Set.png" id="2_c88ot"]
 [ext_resource type="AudioStream" uid="uid://cjewwhk4dbecn" path="res://Audio/SUCCES.mp3" id="3"]
 [ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="4_2mdl5"]
@@ -60,7 +62,7 @@ position = Vector2(120, 67.5)
 [node name="Mask" type="Sprite2D" parent="." unique_id=1771308565]
 position = Vector2(160, 67.5)
 
-[node name="Back" type="Control" parent="." unique_id=1183749753]
+[node name="Control" type="Control" parent="." unique_id=141267943]
 layout_mode = 3
 anchors_preset = 0
 
