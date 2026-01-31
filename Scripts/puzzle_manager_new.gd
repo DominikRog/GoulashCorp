@@ -41,7 +41,7 @@ var timer_active: bool = false
 @onready var shape_display: Node2D = $ShapeDisplay
 @onready var player: CharacterBody2D = $Player
 @onready var all_snaped_sfx: AudioStreamPlayer2D = $LevelSucces
-@onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
+#@onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
 
 
 signal all_shapes_completed
@@ -50,8 +50,6 @@ signal shape_completed
 
 func _ready():
 	MusicManager.enter_level(1.0)
-	var t := create_tween()
-	t.tween_property(level_music, "volume_db", -22.0, 0.6)
 	# --- Set window resolution to 320x180 (pixel-art friendly) ---
 	_apply_window_settings()
 	player.entrance_completed.connect(_on_player_entrance_completed)
@@ -426,6 +424,7 @@ func _on_tile_snapped(index: int):
 
 	if all_snapped:
 		all_snaped_sfx.play()
+		await all_snaped_sfx.finished
 		complete_current_shape()
 
 func complete_current_shape():
@@ -447,7 +446,7 @@ func complete_current_shape():
 	shape_completed.emit()
 
 	current_shape_index += 1
-	timer += 45.0
+	timer += 60.0
 
 	if current_shape_index >= current_shapes.size():
 		timer_active = false

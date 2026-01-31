@@ -26,6 +26,7 @@ var is_snapping: bool = false
 
 
 func _ready():
+	MusicManager.enter_menu_or_dialogue()
 	# Calculate positions: player at 1/3, mask at 2/3
 	player_entrance_position = Vector2(play_area_size.x / 3.0, play_area_size.y / 2.0)
 	mask_base_position = Vector2(play_area_size.x * 2.0 / 3.0, play_area_size.y / 2.0)
