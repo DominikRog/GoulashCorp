@@ -479,7 +479,7 @@ func update_timer_display():
 			timer_label.modulate = Color(1, 1, 1)
 
 func _on_all_shapes_completed():
-	get_tree().change_scene_to_file("res://Scenes/Dialogue.tscn")
+	get_tree().change_scene_to_file("res://Scenes/CollectionRoom.tscn")
 
 func _on_timer_expired():
 	restart_puzzle()
