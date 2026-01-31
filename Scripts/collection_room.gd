@@ -2,7 +2,7 @@ extends Node2D
 
 # Collection room where player collects mask and transforms
 
-@export var play_area_size: Vector2 = Vector2(240, 135)
+@export var play_area_size: Vector2 = Vector2(240, 128)
 @export var collection_distance: float = 20.0  # Distance to trigger mask collection
 
 var mask_position: Vector2
@@ -12,9 +12,9 @@ var mask_collected: bool = false
 
 @onready var player: CharacterBody2D = $Player
 @onready var mask_sprite: Sprite2D = $Mask
-@onready var popup: Control = $UI/Popup
-@onready var question_label: Label = $UI/Popup/Panel/MarginContainer/VBoxContainer/QuestionText
-@onready var choices_container: VBoxContainer = $UI/Popup/Panel/MarginContainer/VBoxContainer/ChoicesContainer
+@onready var popup: Control = $Popup
+@onready var question_label: Label = $Popup/QuestionText
+@onready var choices_container: VBoxContainer = $Popup/ChoicesContainer
 
 func _ready():
 	# Calculate positions: player at 1/3, mask at 2/3
@@ -58,8 +58,7 @@ func show_mind_puzzle():
 		return
 
 	# Show completed shapes as hint
-	var shapes_text = "You have assembled: " + ", ".join(GameManager.completed_shapes) + "\n\n"
-	question_label.text = shapes_text + act_data.get("question", "")
+	question_label.text = act_data.get("question", "")
 
 	# Clear existing choices
 	clear_choices()
@@ -82,7 +81,7 @@ func add_choice_button(text: String, is_correct: bool):
 	var button = Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(220, 28)
-	button.add_theme_font_size_override("font_size", 8)
+	button.add_theme_font_size_override("font_size", 24)
 	button.pressed.connect(_on_choice_selected.bind(is_correct))
 	choices_container.add_child(button)
 

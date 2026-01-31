@@ -13,8 +13,6 @@ gradient = SubResource("Gradient_2842h")
 fill = 1
 fill_from = Vector2(0.5014245, 0.4871795)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2842h"]
-
 [node name="Dialogue" type="Control" unique_id=232306232]
 layout_mode = 3
 anchors_preset = 15
@@ -60,42 +58,3 @@ offset_bottom = 601.0
 size_flags_vertical = 4
 theme_override_constants/separation = 15
 alignment = 1
-
-[node name="Panel" type="Panel" parent="." unique_id=1546737233]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -410.0
-offset_top = -190.0
-offset_right = 390.0
-offset_bottom = 210.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_2842h")
-
-[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=1014184549]
-visible = false
-layout_mode = 1
-anchors_preset = -1
-anchor_left = -0.112
-anchor_top = 0.17
-anchor_right = 1.1170001
-anchor_bottom = 1.3700001
-offset_left = -0.3999939
-offset_right = 0.39990234
-offset_bottom = -6.1035156e-05
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 30
-theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 30
-theme_override_constants/margin_bottom = 30
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1522128501]
-visible = false
-layout_mode = 2
-theme_override_constants/separation = 30
