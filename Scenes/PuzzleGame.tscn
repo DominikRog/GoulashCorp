@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bgneff5q81fuk"]
 
 [ext_resource type="Script" uid="uid://c7ut4id54qpe7" path="res://Scripts/puzzle_manager.gd" id="1_puzzle"]
-[ext_resource type="PackedScene" path="res://Scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
 size = Vector2(20, 720)
@@ -33,7 +33,6 @@ zoom = Vector2(4, 4)
 position = Vector2(160, 90)
 
 [node name="ShapeDisplay" type="Node2D" parent="." unique_id=735189848]
-scale = Vector2(0.25, 0.25)
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1707576048]
 

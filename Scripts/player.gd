@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 @export var speed := 200.0
+@export var animation_speed := 70.0
 @export var push_force := 150.0
 var can_move: bool = true
 var animation_time: float = 0.0
@@ -16,7 +17,7 @@ func _physics_process(delta):
 	if is_entering:
 		# Move directly without collision during entrance
 		var direction = (entrance_target - global_position).normalized()
-		global_position += direction * speed * delta
+		global_position += direction * animation_speed * delta
 
 		# Animate walk
 		animation_time += delta * 8.0
