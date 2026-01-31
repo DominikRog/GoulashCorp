@@ -2,11 +2,9 @@
 
 [ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
 [ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Old Assets/Tiles_Set.png" id="2_euhyg"]
-[ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/Player.tscn" id="2_player"]
-[ext_resource type="AudioStream" uid="uid://cjpvoyiwb0rs3" path="res://Audio/LevelComplete.mp3" id="4_vxw10"]
-[ext_resource type="AudioStream" uid="uid://de23bwkonenvn" path="res://Audio/BackgroundMusic.mp3" id="5_58pa3"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
-[ext_resource type="PackedScene" uid="uid://bff8vbws47nyt" path="res://Scenes/goblin.tscn" id="4_vxw10"]
+[ext_resource type="PackedScene" path="res://Scenes/goblin.tscn" id="4_vxw10"]
+[ext_resource type="AudioStream" uid="uid://cjpvoyiwb0rs3" path="res://Audio/LevelComplete.mp3" id="5_58pa3"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vxw10"]
 texture = ExtResource("2_euhyg")
@@ -119,7 +117,7 @@ rotation = 1.5708
 shape = SubResource("RectangleShape2D_euhyg")
 
 [node name="LevelSucces" type="AudioStreamPlayer2D" parent="." unique_id=1202948004]
-stream = ExtResource("4_vxw10")
+stream = ExtResource("5_58pa3")
 
 [connection signal="all_shapes_completed" from="." to="." method="_on_all_shapes_completed"]
 [connection signal="timer_expired" from="." to="." method="_on_timer_expired"]

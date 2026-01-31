@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://qeiw6rpu4x2k"]
+[gd_scene format=3 uid="uid://8o4nw5vedc03"]
 
-[ext_resource type="Texture2D" uid="uid://b6es3txnpclsm" path="res://Assets/1280x720_grey.jpg" id="1_q12u6"]
+[ext_resource type="Texture2D" uid="uid://b6es3txnpclsm" path="res://Old Assets/1280x720_grey.jpg" id="1_q12u6"]
 
 [node name="Level1" type="Node2D" unique_id=245484995]
 
