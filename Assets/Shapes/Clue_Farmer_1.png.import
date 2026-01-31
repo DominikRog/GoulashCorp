@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ba2e04gr64sbe"
-path="res://.godot/imported/Placeholder.png-84aa123d094408b3c4a38a258a29d6a8.ctex"
+uid="uid://bp3enrarb3n33"
+path="res://.godot/imported/Clue_Farmer_1.png-348356e5e325ff5af8ba2bfb0da17a02.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Shapes/Placeholder.png"
-dest_files=["res://.godot/imported/Placeholder.png-84aa123d094408b3c4a38a258a29d6a8.ctex"]
+source_file="res://Assets/Shapes/Clue_Farmer_1.png"
+dest_files=["res://.godot/imported/Clue_Farmer_1.png-348356e5e325ff5af8ba2bfb0da17a02.ctex"]
 
 [params]
 
