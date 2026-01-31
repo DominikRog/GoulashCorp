@@ -6,11 +6,21 @@ extends RigidBody2D
 @export var snap_threshold: float = 8.0  # Distance to snap to correct position
 @export var snap_force: float = 300.0
 
+# --- NEW: smooth snap settings ---
+@export var snap_duration: float = 0.14       # how long the "slide" takes
+@export var snap_deadzone: float = 1.0        # small zone to avoid micro jitter
+# -------------------------------
+
 var correct_position: Vector2 = Vector2.ZERO
 var is_snapped: bool = false
 var tile_index: int = 0  # Index in 3x3 grid (0-8)
 var shape_id: String = ""  # Which shape this tile belongs to
 var can_snap: bool = false  # Prevent snapping until scattered
+
+# --- NEW: internal state ---
+var _is_snapping: bool = false
+var _snap_tween: Tween = null
+# ---------------------------
 
 signal tile_snapped(index: int)
 
@@ -23,39 +33,75 @@ func _ready():
 	lock_rotation = true  # Prevent tiles from rotating
 
 	# Add bounce for wall/tile collisions
-	var physics_mat = PhysicsMaterial.new()
+	var physics_mat: PhysicsMaterial = PhysicsMaterial.new()
 	physics_mat.bounce = 0.5
 	physics_material_override = physics_mat
 
 func _physics_process(_delta):
-	if is_snapped or not can_snap:
+	if is_snapped or not can_snap or _is_snapping:
 		return
 
 	# Check if tile is close enough to snap
-	var distance = global_position.distance_to(correct_position)
+	var distance: float = global_position.distance_to(correct_position)
 	if distance < snap_threshold:
-		snap_to_position()
+		_start_smooth_snap()
 
-
-func snap_to_position():
-	"""Lock tile in correct position"""
-	if is_snapped:
+func _start_smooth_snap():
+	"""Smoothly slide tile into correct position, then lock it."""
+	if is_snapped or _is_snapping:
 		return
 
-	is_snapped = true
-	global_position = correct_position
+	_is_snapping = true
 
-	# Disable physics once snapped
+	# Stop physics motion immediately so it doesn't fight the tween
+	linear_velocity = Vector2.ZERO
+	angular_velocity = 0.0
 	freeze = true
 
-	tile_snapped.emit(tile_index)
+	# If there is an old tween (safety), kill it
+	if _snap_tween != null:
+		_snap_tween.kill()
+		_snap_tween = null
+
+	# Create tween to slide into place
+	_snap_tween = create_tween()
+	_snap_tween.set_trans(Tween.TRANS_SINE)
+	_snap_tween.set_ease(Tween.EASE_OUT)
+	_snap_tween.tween_property(self, "global_position", correct_position, snap_duration)
+
+	_snap_tween.finished.connect(func() -> void:
+		# Ensure exact final alignment
+		global_position = correct_position
+
+		is_snapped = true
+		_is_snapping = false
+		_snap_tween = null
+
+		# Emit AFTER arriving so PuzzleManager can safely disable collisions, etc.
+		tile_snapped.emit(tile_index)
+	)
+
+# Kept for compatibility if something calls it directly
+func snap_to_position():
+	"""Lock tile in correct position (now smooth)."""
+	_start_smooth_snap()
 
 func scatter_to(target_pos: Vector2):
 	"""Throw tile toward target with physics velocity"""
-	var direction = (target_pos - global_position).normalized()
+	# Cancel any snapping in progress (e.g., if reused or restarted)
+	_is_snapping = false
+	if _snap_tween != null:
+		_snap_tween.kill()
+		_snap_tween = null
+
+	is_snapped = false
+	freeze = false
+	can_snap = false
+
+	var direction: Vector2 = (target_pos - global_position).normalized()
 	# Add more angle spread for better distribution
 	direction = direction.rotated(randf_range(-0.6, 0.6))
-	var speed = randf_range(1000.0, 1300.0)
+	var speed: float = randf_range(1000.0, 1300.0)
 	linear_velocity = direction * speed
 	# Add slight random angular velocity for natural movement (but rotation is locked)
 	angular_velocity = 0.0  # Keep at 0 since rotation is locked
@@ -86,10 +132,10 @@ func setup_collision_from_image(tile_image: Image):
 	bitmap.create_from_image_alpha(tile_image, 0.1)  # 0.1 = alpha threshold (10%)
 
 	# Generate polygons from opaque pixels
-	var polygons = bitmap.opaque_to_polygons(Rect2(0, 0, tile_size, tile_size), 2.0)  # 2.0 = epsilon for simplification
+	var polygons = bitmap.opaque_to_polygons(Rect2(0, 0, tile_size, tile_size), 2.0)  # 2.0 = epsilon
 
 	# Track if we created any collision shapes
-	var collision_created = false
+	var collision_created: bool = false
 
 	# Create CollisionPolygon2D for each polygon
 	for polygon in polygons:
@@ -99,7 +145,6 @@ func setup_collision_from_image(tile_image: Image):
 		var collision_polygon = CollisionPolygon2D.new()
 
 		# Center the polygon coordinates
-		# BitMap coords are 0-16, we want -8 to 8 for centered sprite
 		var centered_polygon = PackedVector2Array()
 		for point in polygon:
 			centered_polygon.append(point - Vector2(tile_size / 2.0, tile_size / 2.0))
