@@ -12,6 +12,7 @@ var mask_collected: bool = false
 
 @onready var player: CharacterBody2D = $Player
 @onready var mask_sprite: Sprite2D = $Mask
+@onready var back: Control = $Back
 @onready var popup: Control = $Popup
 @onready var question_label: Label = $Popup/QuestionText
 @onready var choices_container: VBoxContainer = $Popup/ChoicesContainer
@@ -91,6 +92,7 @@ func _on_choice_selected(is_correct: bool):
 		# Hide popup and start player entrance
 		popup.visible = false
 		has_answered = true
+		back.visible = false
 		start_player_entrance()
 	else:
 		# Wrong answer - restart act
