@@ -13,8 +13,8 @@ enum DialogueType {
 var current_type: DialogueType = DialogueType.OPENING
 var current_question_data: Dictionary = {}
 
-@onready var dialogue_text: Label = $Panel/MarginContainer/VBoxContainer/DialogueText
-@onready var choices_container: VBoxContainer = $Panel/MarginContainer/VBoxContainer/ChoicesContainer
+@onready var dialogue_text: Label = $DialogueText
+@onready var choices_container: VBoxContainer = $ChoicesContainer
 
 signal dialogue_completed
 signal answer_selected(correct: bool)
