@@ -22,11 +22,11 @@ var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 @export var freeze_tile_when_snapped: bool = true
 # --------------------------------------------------------------------
 
-# --- NEW: wall "magnetic" repulsion for tiles ---
+# --- wall "magnetic" repulsion for tiles ---
 @export var wall_repulsion_enabled: bool = true
-@export var wall_repulsion_range: float = 16.0          # px from wall where repulsion starts
+@export var wall_repulsion_range: float = 24.0          # px from wall where repulsion starts
 @export var wall_repulsion_strength: float = 24000.0    # overall strength of the field
-@export var wall_repulsion_margin: float = 8.0         # where the "wall line" is inside play area
+@export var wall_repulsion_margin: float = 8.0          # where the "wall line" is inside play area
 # ------------------------------------------------
 
 var current_shapes: Array[String] = []
@@ -90,7 +90,6 @@ func _physics_process(delta: float) -> void:
 func start_next_shape():
 	"""Begin the next shape puzzle"""
 	if current_shape_index >= current_shapes.size():
-		# All shapes completed
 		all_shapes_completed.emit()
 		return
 
@@ -102,21 +101,17 @@ func start_next_shape():
 	# Split and scatter
 	spawn_and_scatter_tiles(shape_name)
 
-	# Start timer is triggered when player entrance finishes
-	# (see _on_player_entrance_completed)
+	# Timer start happens when player finishes entrance
 
 func _on_player_entrance_completed():
 	timer_active = true
 
 func show_shape_preview(shape_name: String):
 	"""Display the complete shape for 1 second"""
-	# Create visual of complete shape at center
 	var preview = create_shape_preview(shape_name)
 	shape_display.add_child(preview)
 
 	await get_tree().create_timer(shape_preview_duration).timeout
-
-	# Remove preview
 	preview.queue_free()
 
 func create_shape_preview(shape_name: String) -> Node2D:
@@ -124,23 +119,19 @@ func create_shape_preview(shape_name: String) -> Node2D:
 	var container = Node2D.new()
 	container.position = shape_center
 
-	# Load the complete 48x48 shape texture
 	var shape_texture = load_shape_texture(shape_name)
 
 	if shape_texture:
-		# Show the complete shape as one sprite
 		var sprite = Sprite2D.new()
 		sprite.texture = shape_texture
 		sprite.position = Vector2.ZERO
 		container.add_child(sprite)
 	else:
-		# Fallback: Create 3x3 grid of colored tiles
 		for y in range(3):
 			for x in range(3):
 				var tile_visual = Sprite2D.new()
 				tile_visual.position = Vector2(x * 16 - 16, y * 16 - 16)
 
-				# Placeholder: random color for each tile
 				var color_rect = ColorRect.new()
 				color_rect.size = Vector2(16, 16)
 				color_rect.color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0))
@@ -268,39 +259,30 @@ func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
 			var pos = shape_center + Vector2(x * 16 - 16, y * 16 - 16)
 			correct_positions.append(pos)
 
-	# Create tile slots (render behind tiles)
 	create_tile_slots(correct_positions)
 
-	# Create tiles at their correct grid positions first
 	for i in range(9):
 		var tile = tile_scene.instantiate()
 
-		# Calculate which part of the 48x48 texture this tile uses
 		var tile_x = i % 3
 		var tile_y = i / 3
 		var tile_texture = extract_tile_texture(shape_texture, tile_x, tile_y)
 
-		# Setup tile data BEFORE adding to tree
 		tile.shape_id = shape_name
 		tile.tile_index = i
 		tile.correct_position = correct_positions[i]
 
-		# Add to tree (this triggers _ready)
 		add_child(tile)
 
-		# Apply friction / material so tiles don't slide like on ice
 		_apply_tile_friction(tile)
 
-		# Set texture/sprite after node is in tree
 		var sprite = tile.get_node("Sprite2D")
 		var tile_image: Image = null
 
 		if tile_texture:
 			sprite.texture = tile_texture
-			# Extract image data for collision generation
 			tile_image = extract_tile_image(shape_texture, tile_x, tile_y)
 		else:
-			# Placeholder: colored square
 			var color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0), 1.0)
 			var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
 			img.fill(color)
@@ -308,27 +290,27 @@ func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
 			sprite.texture = texture
 			tile_image = img
 
-		# Setup collision shape from image
 		if tile_image:
 			tile.setup_collision_from_image(tile_image)
 
 		# Position tile at its CORRECT position in the 3x3 grid
 		tile.global_position = correct_positions[i]
 
-		# FREEZE tiles immediately to prevent any physics movement before scatter
+		# --- NEW: store the "correct/original" rotation for this tile (for grab-align) ---
+		# This is best-effort: if tile.gd doesn't define it, it won't crash.
+		# We want the tile to align to the rotation it has in the solved puzzle.
+		_set_tile_correct_rotation(tile, tile.rotation)
+		# ------------------------------------------------------------------------------
+
+		# Prevent physics movement before scatter
 		tile.freeze = true
 
-		# Connect snapped signal
 		tile.tile_snapped.connect(_on_tile_snapped)
-
 		tiles.append(tile)
 
-	# Wait a moment so tiles are visible in grid formation
 	await get_tree().create_timer(0.3).timeout
 
-	# Now scatter them from their grid positions with velocity
 	for tile in tiles:
-		# Unfreeze and enable collision for tiles
 		tile.freeze = false
 		tile.collision_layer = 2
 		tile.collision_mask = 7
@@ -336,55 +318,40 @@ func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
 		var scatter_pos = get_random_scatter_position()
 		tile.scatter_to(scatter_pos)
 
-	# Show player after 2.0 second delay (let tiles scatter and settle)
 	await get_tree().create_timer(2.0).timeout
 	if player:
-		# Player enters from bottom
 		var entry_pos = Vector2(shape_center.x, play_area_size.y + 50)
-		# Target is below the shape with offset
 		var target_pos = Vector2(shape_center.x, shape_center.y + 60)
 		player.start_entrance(entry_pos, target_pos)
 
 func load_shape_texture(shape_name: String) -> Texture2D:
-	"""Load 48x48 shape texture from Assets/Shapes/"""
 	var path = "res://Assets/Shapes/" + shape_name + ".png"
 	if ResourceLoader.exists(path):
 		return load(path)
-	else:
-		# Return null if not found, tile will use placeholder
-		return null
+	return null
 
 func extract_tile_texture(shape_texture: Texture2D, tile_x: int, tile_y: int) -> Texture2D:
-	"""Extract a 16x16 tile from the 48x48 shape texture"""
 	if shape_texture == null:
 		return null
 
-	# Create AtlasTexture to represent one tile from the shape
 	var atlas = AtlasTexture.new()
 	atlas.atlas = shape_texture
 	atlas.region = Rect2(tile_x * 16, tile_y * 16, 16, 16)
 	return atlas
 
 func extract_tile_image(shape_texture: Texture2D, tile_x: int, tile_y: int) -> Image:
-	"""Extract a 16x16 tile region as Image for collision generation"""
 	if shape_texture == null:
 		return null
 
-	# Get the full texture as Image
 	var full_image = shape_texture.get_image()
 	if full_image == null:
 		return null
 
-	# Create a new 16x16 image for this tile
 	var tile_image = Image.create(16, 16, false, full_image.get_format())
-
-	# Copy the specific 16x16 region from the full image
 	tile_image.blit_rect(full_image, Rect2(tile_x * 16, tile_y * 16, 16, 16), Vector2.ZERO)
-
 	return tile_image
 
 func get_random_scatter_position() -> Vector2:
-	"""Get a random position within play area, away from center"""
 	var margin = 100
 	var attempts = 0
 	var max_attempts = 20
@@ -394,15 +361,13 @@ func get_random_scatter_position() -> Vector2:
 		var y = randf_range(margin, play_area_size.y - margin)
 		var pos = Vector2(x, y)
 
-		# Ensure it's far enough from center (increased distance)
 		if pos.distance_to(shape_center) > 150:
 			return pos
 
 		attempts += 1
 
-	# Fallback - ensure good spread in all directions
-	var angle = randf() * TAU  # Random angle in radians (0 to 2*PI)
-	var distance = randf_range(150, 250)  # Distance from center
+	var angle = randf() * TAU
+	var distance = randf_range(150, 250)
 	return shape_center + Vector2(cos(angle), sin(angle)) * distance
 
 func create_tile_slots(positions: Array[Vector2]):
@@ -436,12 +401,9 @@ func create_voronoi_tile_slots(pieces: Array, positions: Array[Vector2]):
 		tile_slots.append(slot)
 
 func _on_tile_snapped(index: int):
-	"""Called when a tile snaps into place"""
-	# Update slot visual
 	if index < tile_slots.size():
 		tile_slots[index].set_filled(true)
 
-	# Make the snapped tile stop blocking the player / other tiles
 	if disable_collision_when_snapped:
 		for tile in tiles:
 			if tile.tile_index == index:
@@ -450,7 +412,6 @@ func _on_tile_snapped(index: int):
 					tile.freeze = true
 				break
 
-	# Check if all tiles are snapped
 	var all_snapped = true
 	for tile in tiles:
 		if not tile.is_snapped:
@@ -461,83 +422,66 @@ func _on_tile_snapped(index: int):
 		complete_current_shape()
 
 func complete_current_shape():
-	"""Current shape is complete, move to next"""
 	var shape_name = current_shapes[current_shape_index]
 
-	# Hide player during transition
 	if player:
 		player.visible = false
 		player.can_move = false
 
-	# Clear tiles
 	for tile in tiles:
 		tile.queue_free()
 	tiles.clear()
 
-	# Clear slots
 	for slot in tile_slots:
 		slot.queue_free()
 	tile_slots.clear()
 
-	# Update game state
 	GameManager.complete_shape(shape_name)
 	shape_completed.emit()
 
 	current_shape_index += 1
 	timer += 45.0
 
-	# Check if all shapes done
 	if current_shape_index >= current_shapes.size():
 		timer_active = false
 		all_shapes_completed.emit()
 	else:
-		# Next shape
 		start_next_shape()
 
 func restart_puzzle():
-	"""Restart current puzzle after timer expires"""
-	# Hide player during restart
 	if player:
 		player.visible = false
 		player.can_move = false
 
-	# Clear tiles
 	for tile in tiles:
 		tile.queue_free()
 	tiles.clear()
 
-	# Clear slots
 	for slot in tile_slots:
 		slot.queue_free()
 	tile_slots.clear()
 
-	# Reset timer
 	var act_data = GameManager.get_current_act_data()
 	timer = act_data.get("timer", 60.0)
 
-	# Restart same shape
 	current_shape_index = max(0, current_shape_index)
 	start_next_shape()
 
 func update_timer_display():
-	"""Update the timer UI"""
 	if timer_label:
 		var minutes = int(timer) / 60
 		var seconds = int(timer) % 60
 		timer_label.text = "%02d:%02d" % [minutes, seconds]
 
-		# Warning color when low
 		if timer < 10:
 			timer_label.modulate = Color(1, 0.3, 0.3)
 		else:
 			timer_label.modulate = Color(1, 1, 1)
 
 func _on_all_shapes_completed():
-	"""All shapes in act are done, move to mind puzzle"""
 	get_tree().change_scene_to_file("res://Scenes/Dialogue.tscn")
 
 func _on_timer_expired():
-	"""Timer ran out, restart puzzle"""
 	restart_puzzle()
 
 # ============================================================
@@ -569,11 +513,7 @@ func _apply_tile_friction(tile: RigidBody2D):
 	var mat: PhysicsMaterial = PhysicsMaterial.new()
 	mat.friction = tile_friction
 	mat.bounce = 0.0  # No bounce for puzzle feel
-
 	tile.physics_material_override = mat
-
-	# Keep the damping values set in tile.gd _ready() for natural physics feel
-	# (linear_damp = 3.0, angular_damp = 2.0 for natural rotation)
 
 func _disable_tile_collision(tile: RigidBody2D):
 	tile.collision_layer = 0
@@ -586,16 +526,12 @@ func _disable_tile_collision(tile: RigidBody2D):
 			child.disabled = true
 
 func _apply_wall_repulsion(delta: float) -> void:
-	# Repel tiles from the play area edges like a magnetic field.
-	# Stronger near the wall, fades to zero at wall_repulsion_range.
-
 	var rng: float = wall_repulsion_range
 	if rng < 1.0:
 		rng = 1.0
 
 	var strength: float = wall_repulsion_strength
 
-	# Define inner "wall lines"
 	var left_x: float = wall_repulsion_margin
 	var right_x: float = play_area_size.x - wall_repulsion_margin
 	var top_y: float = wall_repulsion_margin
@@ -613,28 +549,24 @@ func _apply_wall_repulsion(delta: float) -> void:
 		var p: Vector2 = tile.global_position
 		var force: Vector2 = Vector2.ZERO
 
-		# Left wall
 		var dl: float = p.x - left_x
 		if dl < rng:
 			var k: float = 1.0 - (dl / rng)
 			if k > 0.0:
 				force.x += strength * k * k
 
-		# Right wall
 		var dr: float = right_x - p.x
 		if dr < rng:
 			var k2: float = 1.0 - (dr / rng)
 			if k2 > 0.0:
 				force.x -= strength * k2 * k2
 
-		# Top wall
 		var dt: float = p.y - top_y
 		if dt < rng:
 			var k3: float = 1.0 - (dt / rng)
 			if k3 > 0.0:
 				force.y += strength * k3 * k3
 
-		# Bottom wall
 		var db: float = bottom_y - p.y
 		if db < rng:
 			var k4: float = 1.0 - (db / rng)
@@ -642,7 +574,6 @@ func _apply_wall_repulsion(delta: float) -> void:
 				force.y -= strength * k4 * k4
 
 		if force != Vector2.ZERO:
-			# Scale by delta so it feels stable across FPS
 			tile.apply_central_force(force * delta)
 
 func setup_voronoi_collision(tile: RigidBody2D, piece):
@@ -675,3 +606,20 @@ func setup_voronoi_collision(tile: RigidBody2D, piece):
 	tile.add_child(collision_polygon)
 
 	print("Created collision polygon with %d vertices for piece %d" % [local_boundary.size(), piece.id])
+
+# --- NEW helper: store correct rotation on tile without crashing if the var doesn't exist ---
+func _set_tile_correct_rotation(tile: Node, rot: float) -> void:
+	# If your Tile script defines `correct_rotation`, this will set it.
+	# If not, we just ignore it safely.
+	if tile == null:
+		return
+	# Godot 4: safest is to try set() and ignore errors by checking in a few ways.
+	if tile.has_method("set_correct_rotation"):
+		tile.call("set_correct_rotation", rot)
+		return
+	# If it's a plain variable on the tile script:
+	# `set()` works for script properties that exist.
+	if tile.has_method("set"):
+		# This will work if the property exists; if not, it won't crash the game,
+		# but may warn in the editor; acceptable for best-effort.
+		tile.set("correct_rotation", rot)
