@@ -45,7 +45,6 @@ func advance_to_next_act(next_character: String):
 	"""Move to the next act after successful mind puzzle"""
 	current_act += 1
 	current_character = next_character
-	reset_act_progress()
 
 	if current_act > 6:
 		game_won.emit()
