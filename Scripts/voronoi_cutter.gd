@@ -155,7 +155,7 @@ func create_voronoi_regions(shape_image: Image, seeds: Array[Vector2]) -> Array[
 
 	return pieces
 
-func validate_and_merge_pieces(pieces: Array[VoronoiPiece], shape_image: Image) -> Array[VoronoiPiece]:
+func validate_and_merge_pieces(pieces: Array[VoronoiPiece], _shape_image: Image) -> Array[VoronoiPiece]:
 	"""Remove tiny pieces and merge them with neighbors"""
 	var valid_pieces: Array[VoronoiPiece] = []
 	var small_pieces: Array[VoronoiPiece] = []
