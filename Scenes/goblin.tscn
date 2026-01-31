@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bff8vbws47nyt"]
 
 [ext_resource type="Script" uid="uid://cdfh755kpjg35" path="res://Scripts/goblin.gd" id="1_xm08b"]
-[ext_resource type="Texture2D" uid="uid://cjc0ht2yavujl" path="res://Assets/Goblin_Run.png" id="2_xcvi8"]
+[ext_resource type="Texture2D" uid="uid://0wnuj4m1skjo" path="res://Assets/Goblin_Run.png" id="2_xcvi8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xm08b"]
 size = Vector2(15, 17)

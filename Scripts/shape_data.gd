@@ -7,11 +7,11 @@ var acts = {
 		"character": "demon",
 		"next_character": "farmer",
 		"shapes": ["Clue_Farmer_1", "Clue_Farmer_2"],
-		"question": "What did you do your whole life?",
+		"question": "Who lives by the sun, yet works by the merchant’s call?",
 		"answers": [
-			{"text": "Slave away at a farm", "correct": true},
-			{"text": "Lead a successful business", "correct": false},
-			{"text": "Guard the castle walls", "correct": false}
+			{"text": "Farmer", "correct": true},
+			{"text": "Sailor", "correct": false},
+			{"text": "Shepherd", "correct": false}
 		],
 		"timer": 45,
 		"dialogue_before": "You emerge from the shadows, a formless demon seeking flesh..."
@@ -20,11 +20,11 @@ var acts = {
 		"character": "farmer",
 		"next_character": "merchant",
 		"shapes": ["Clue_Merchant_1", "Clue_Merchant_2"],
-		"question": "Where did your fortune come from?",
+		"question": "Who sells what they never make, and buys what they never truly need?",
 		"answers": [
-			{"text": "Trading goods in the market", "correct": true},
-			{"text": "Working the land with my hands", "correct": false},
-			{"text": "Serving the crown with honor", "correct": false}
+			{"text": "Thief", "correct": false},
+			{"text": "Noble", "correct": false},
+			{"text": "Merchant", "correct": true}
 		],
 		"timer": 50,
 		"dialogue_before": "The farmer's body fits well... but you hunger for more."
@@ -33,11 +33,11 @@ var acts = {
 		"character": "merchant",
 		"next_character": "guardsman",
 		"shapes": ["Clue_Guard_1", "Clue_Guard_2"],
-		"question": "What is your duty?",
+		"question": "Who stops the many, in the name of the more important few?",
 		"answers": [
-			{"text": "Protect the realm from threats", "correct": true},
-			{"text": "Entertain the court with wit", "correct": false},
-			{"text": "Accumulate wealth and influence", "correct": false}
+			{"text": "Guardsman", "correct": true},
+			{"text": "Tax Collector", "correct": false},
+			{"text": "Judge", "correct": false}
 		],
 		"timer": 55,
 		"dialogue_before": "Coin and comfort are not enough. You need power."
@@ -46,11 +46,11 @@ var acts = {
 		"character": "guardsman",
 		"next_character": "jester",
 		"shapes": ["Clue_Jester_1", "Clue_Jester_2"],
-		"question": "How do you move through the court?",
+		"question": "Who speaks the truth by pretending to lie?",
 		"answers": [
-			{"text": "With laughter and hidden truths", "correct": true},
-			{"text": "With blade and unwavering duty", "correct": false},
-			{"text": "With grace and royal bearing", "correct": false}
+			{"text": "Prophet", "correct": false},
+			{"text": "Jester", "correct": true},
+			{"text": "Spy", "correct": false}
 		],
 		"timer": 60,
 		"dialogue_before": "A soldier's strength is limited. You need access to the throne."
@@ -59,11 +59,11 @@ var acts = {
 		"character": "jester",
 		"next_character": "queen",
 		"shapes": ["Clue_Queen_1", "Clue_Queen_2"],
-		"question": "Who sits beside the king?",
+		"question": "Who may change a kingdom, but cannot change its laws?",
 		"answers": [
-			{"text": "The Queen, with grace and power", "correct": true},
-			{"text": "The fool, whispering advice", "correct": false},
-			{"text": "The guard, ever vigilant", "correct": false}
+			{"text": "General", "correct": false},
+			{"text": "Queen", "correct": true},
+			{"text": "Judge", "correct": false}
 		],
 		"timer": 65,
 		"dialogue_before": "So close now... one more step to the throne."
@@ -72,11 +72,11 @@ var acts = {
 		"character": "queen",
 		"next_character": "victory",
 		"shapes": ["throne", "orb"],  # Placeholder - will be defined later
-		"question": "What do you seek?",
+		"question": "Who, with a single decision, can alter hundreds more?",
 		"answers": [
-			{"text": "Ultimate power over all", "correct": true},
-			{"text": "A life of simple pleasures", "correct": false},
-			{"text": "To serve with loyalty", "correct": false}
+			{"text": "King", "correct": true},
+			{"text": "Priest", "correct": false},
+			{"text": "Warrior", "correct": false}
 		],
 		"timer": 70,
 		"dialogue_before": "The Queen's body is yours. The final step awaits..."
