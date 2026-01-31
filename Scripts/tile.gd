@@ -10,11 +10,9 @@ var correct_position: Vector2 = Vector2.ZERO
 var is_snapped: bool = false
 var tile_index: int = 0  # Index in 3x3 grid (0-8)
 var shape_id: String = ""  # Which shape this tile belongs to
+var can_snap: bool = false  # Prevent snapping until scattered
 
-@onready var sprite: Sprite2D = $Sprite2D
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-
-signal tile_snapped
+signal tile_snapped(index: int)
 
 func _ready():
 	# Physics setup for pushing
@@ -22,9 +20,15 @@ func _ready():
 	gravity_scale = 0.0  # Top-down, no gravity
 	linear_damp = 3.0  # Slow down naturally
 	angular_damp = 5.0  # Prevent spinning
+	lock_rotation = true  # Prevent tiles from rotating
+
+	# Add bounce for wall/tile collisions
+	var physics_mat = PhysicsMaterial.new()
+	physics_mat.bounce = 0.5
+	physics_material_override = physics_mat
 
 func _physics_process(_delta):
-	if is_snapped:
+	if is_snapped or not can_snap:
 		return
 
 	# Check if tile is close enough to snap
@@ -32,29 +36,6 @@ func _physics_process(_delta):
 	if distance < snap_threshold:
 		snap_to_position()
 
-func setup(shape_name: String, index: int, correct_pos: Vector2, texture: Texture2D = null):
-	"""Initialize tile with its correct position and appearance"""
-	shape_id = shape_name
-	tile_index = index
-	correct_position = correct_pos
-
-	if texture:
-		sprite.texture = texture
-	else:
-		# Placeholder: colored square
-		create_placeholder_sprite()
-
-func create_placeholder_sprite():
-	"""Create a simple colored square for testing"""
-	# Generate a random bright color for visibility
-	var color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0), 1.0)
-
-	# Create a simple texture
-	var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-	img.fill(color)
-
-	var texture = ImageTexture.create_from_image(img)
-	sprite.texture = texture
 
 func snap_to_position():
 	"""Lock tile in correct position"""
@@ -67,16 +48,21 @@ func snap_to_position():
 	# Disable physics once snapped
 	freeze = true
 
-	# Visual feedback
-	modulate = Color(1, 1, 1, 1)  # Full brightness when snapped
-
-	tile_snapped.emit()
+	tile_snapped.emit(tile_index)
 
 func scatter_to(target_pos: Vector2):
-	"""Move tile to a random position at start"""
-	global_position = target_pos
-	# Start slightly dimmed
-	modulate = Color(0.8, 0.8, 0.8, 1)
+	"""Throw tile toward target with physics velocity"""
+	var direction = (target_pos - global_position).normalized()
+	# Add more angle spread for better distribution
+	direction = direction.rotated(randf_range(-0.6, 0.6))
+	var speed = randf_range(500.0, 700.0)
+	linear_velocity = direction * speed
+	# Add slight random angular velocity for natural movement (but rotation is locked)
+	angular_velocity = 0.0  # Keep at 0 since rotation is locked
+
+	# Enable snapping after a delay (when tile has moved away from correct position)
+	await get_tree().create_timer(0.5).timeout
+	can_snap = true
 
 func _on_body_entered(body):
 	"""Handle collision with player for pushing"""

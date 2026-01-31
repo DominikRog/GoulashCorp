@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://c8bvlay6wn3l5"]
 
-[ext_resource type="Script" path="res://Scripts/tile.gd" id="1_tile"]
+[ext_resource type="Script" uid="uid://q0eka1fi4fvo" path="res://Scripts/tile.gd" id="1_tile"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tile"]
 size = Vector2(16, 16)
 
-[node name="Tile" type="RigidBody2D"]
+[node name="Tile" type="RigidBody2D" unique_id=107737862]
 collision_layer = 2
 collision_mask = 7
 mass = 2.0
@@ -15,9 +15,8 @@ angular_damp = 5.0
 script = ExtResource("1_tile")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0.8, 0.8, 0.8, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=20691837]
 shape = SubResource("RectangleShape2D_tile")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
