@@ -238,8 +238,8 @@ func collect_mask():
 
 	# Check if game is won
 	if GameManager.current_act > 6:
-		# Victory - could show victory screen here
-		get_tree().change_scene_to_file("res://Scenes/MainMenu.tscn")
+		# Victory - go to finale scene (king explosion)
+		get_tree().change_scene_to_file("res://Scenes/FinaleScene.tscn")
 	else:
 		# Next act
 		get_tree().change_scene_to_file("res://Scenes/PuzzleGame.tscn")
@@ -252,7 +252,23 @@ func load_mask_sprite(character_name: String):
 	# Try to load character mask sprite
 	var mask_path = "res://Assets/" + character_name + "_mask.png"
 	if ResourceLoader.exists(mask_path):
-		mask_sprite.texture = load(mask_path)
+		var texture = load(mask_path)
+
+		# Check if it's a sprite sheet (king has 4 frames) and extract first frame
+		if texture:
+			var img = texture.get_image()
+			if img:
+				# If width is 4x height, it's likely a 4-frame horizontal sprite sheet
+				if img.get_width() >= img.get_height() * 3:
+					var frame_width = img.get_width() / 4
+					var atlas = AtlasTexture.new()
+					atlas.atlas = texture
+					atlas.region = Rect2(0, 0, frame_width, img.get_height())
+					mask_sprite.texture = atlas
+					return
+
+			# Not a sprite sheet, use as-is
+			mask_sprite.texture = texture
 	else:
 		# Fallback: use placeholder (Main_Dude.png or colored square)
 		var fallback_path = "res://Assets/Main_Dude.png"
