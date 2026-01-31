@@ -69,3 +69,50 @@ func _on_body_entered(body):
 	if body.name == "Player":
 		# Physics will handle the push automatically
 		pass
+
+func setup_collision_from_image(tile_image: Image):
+	"""Generate collision shape from sprite's alpha channel"""
+	if tile_image == null:
+		push_warning("No image provided for collision generation")
+		return
+
+	# Remove existing CollisionShape2D if present
+	var old_collision = get_node_or_null("CollisionShape2D")
+	if old_collision:
+		old_collision.queue_free()
+
+	# Create BitMap from image alpha channel
+	var bitmap = BitMap.new()
+	bitmap.create_from_image_alpha(tile_image, 0.1)  # 0.1 = alpha threshold (10%)
+
+	# Generate polygons from opaque pixels
+	var polygons = bitmap.opaque_to_polygons(Rect2(0, 0, tile_size, tile_size), 2.0)  # 2.0 = epsilon for simplification
+
+	# Track if we created any collision shapes
+	var collision_created = false
+
+	# Create CollisionPolygon2D for each polygon
+	for polygon in polygons:
+		if polygon.size() < 3:
+			continue  # Skip invalid polygons
+
+		var collision_polygon = CollisionPolygon2D.new()
+
+		# Center the polygon coordinates
+		# BitMap coords are 0-16, we want -8 to 8 for centered sprite
+		var centered_polygon = PackedVector2Array()
+		for point in polygon:
+			centered_polygon.append(point - Vector2(tile_size / 2.0, tile_size / 2.0))
+
+		collision_polygon.polygon = centered_polygon
+		add_child(collision_polygon)
+		collision_created = true
+
+	# If no valid polygons were created, fall back to rectangle
+	if not collision_created:
+		push_warning("No collision polygons generated, using rectangle fallback")
+		var fallback_shape = CollisionShape2D.new()
+		var rect_shape = RectangleShape2D.new()
+		rect_shape.size = Vector2(tile_size, tile_size)
+		fallback_shape.shape = rect_shape
+		add_child(fallback_shape)

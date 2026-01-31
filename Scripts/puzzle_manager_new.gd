@@ -167,8 +167,12 @@ func spawn_and_scatter_tiles(shape_name: String):
 
 		# Set texture/sprite after node is in tree
 		var sprite = tile.get_node("Sprite2D")
+		var tile_image: Image = null
+
 		if tile_texture:
 			sprite.texture = tile_texture
+			# Extract image data for collision generation
+			tile_image = extract_tile_image(shape_texture, tile_x, tile_y)
 		else:
 			# Placeholder: colored square
 			var color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0), 1.0)
@@ -176,6 +180,11 @@ func spawn_and_scatter_tiles(shape_name: String):
 			img.fill(color)
 			var texture = ImageTexture.create_from_image(img)
 			sprite.texture = texture
+			tile_image = img
+
+		# Setup collision shape from image
+		if tile_image:
+			tile.setup_collision_from_image(tile_image)
 
 		# Position tile at its CORRECT position in the 3x3 grid
 		tile.global_position = correct_positions[i]
@@ -229,6 +238,24 @@ func extract_tile_texture(shape_texture: Texture2D, tile_x: int, tile_y: int) ->
 	atlas.atlas = shape_texture
 	atlas.region = Rect2(tile_x * 16, tile_y * 16, 16, 16)
 	return atlas
+
+func extract_tile_image(shape_texture: Texture2D, tile_x: int, tile_y: int) -> Image:
+	"""Extract a 16x16 tile region as Image for collision generation"""
+	if shape_texture == null:
+		return null
+
+	# Get the full texture as Image
+	var full_image = shape_texture.get_image()
+	if full_image == null:
+		return null
+
+	# Create a new 16x16 image for this tile
+	var tile_image = Image.create(16, 16, false, full_image.get_format())
+
+	# Copy the specific 16x16 region from the full image
+	tile_image.blit_rect(full_image, Rect2(tile_x * 16, tile_y * 16, 16, 16), Vector2.ZERO)
+
+	return tile_image
 
 func get_random_scatter_position() -> Vector2:
 	"""Get a random position within play area, away from center"""
@@ -418,7 +445,9 @@ func _disable_tile_collision(tile: RigidBody2D):
 	tile.collision_layer = 0
 	tile.collision_mask = 0
 
-	# Optional extra: if the tile has a CollisionShape2D, disable it too.
-	var cs := tile.get_node_or_null("CollisionShape2D")
-	if cs and cs is CollisionShape2D:
-		cs.disabled = true
+	# Optional extra: disable all collision shapes/polygons
+	for child in tile.get_children():
+		if child is CollisionShape2D:
+			child.disabled = true
+		elif child is CollisionPolygon2D:
+			child.disabled = true
