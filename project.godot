@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Get To The King"
-run/main_scene="res://Scenes/MainMenu.tscn"
+run/main_scene="uid://dhbvk8y5wm2k4"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -24,6 +24,7 @@ ShapeData="*res://Scripts/shape_data.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/stretch/aspect="expand"
 
 [input]
 

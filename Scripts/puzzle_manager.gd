@@ -2,7 +2,7 @@ extends Node2D
 
 # Manages puzzle game: spawns shapes, tracks completion, timer
 
-@export var play_area_size: Vector2 = Vector2(1280, 720)
+@export var play_area_size: Vector2 = Vector2(320, 180)
 @export var shape_preview_duration: float = 1.0
 @export var tile_scene: PackedScene = preload("res://Scenes/Tile.tscn")
 
@@ -130,7 +130,6 @@ func spawn_and_scatter_tiles(shape_name: String):
 
 	# Create tile slots (render behind tiles)
 	create_tile_slots(correct_positions)
-
 	# Create tiles at their correct grid positions first
 	for i in range(9):
 		var tile = tile_scene.instantiate()
@@ -184,13 +183,13 @@ func spawn_and_scatter_tiles(shape_name: String):
 		var scatter_pos = get_random_scatter_position()
 		tile.scatter_to(scatter_pos)
 
-	# Show player after 2.0 second delay (let tiles scatter and settle)
-	await get_tree().create_timer(2.0).timeout
+	# Show player after 0.5 second delay (let tiles scatter and settle)
+	await get_tree().create_timer(0.5).timeout
 	if player:
 		# Player enters from bottom
-		var entry_pos = Vector2(shape_center.x, play_area_size.y + 50)
+		var entry_pos = Vector2(shape_center.x, play_area_size.y + 60)
 		# Target is below the shape with offset
-		var target_pos = Vector2(shape_center.x, shape_center.y + 60)
+		var target_pos = Vector2(shape_center.x, shape_center.y + 40)
 		player.start_entrance(entry_pos, target_pos)
 
 func load_shape_texture(shape_name: String) -> Texture2D:
