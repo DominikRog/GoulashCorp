@@ -24,14 +24,17 @@ texture = ExtResource("2_euhyg")
 [sub_resource type="TileSet" id="TileSet_58pa3"]
 sources/0 = SubResource("TileSetAtlasSource_vxw10")
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vxw10"]
+size = Vector2(546, 1904)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
-size = Vector2(20, 720)
+size = Vector2(562, 1888)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ih7j2"]
-size = Vector2(20, 1320)
+size = Vector2(522.00006, 2356)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_euhyg"]
-size = Vector2(20, 1320)
+size = Vector2(705.99927, 2304)
 
 [node name="PuzzleGame" type="Node2D" unique_id=1909076384]
 script = ExtResource("1_ih7j2")
@@ -92,20 +95,20 @@ collision_layer = 4
 collision_mask = 3
 
 [node name="LeftWall" type="CollisionShape2D" parent="Walls" unique_id=1818404958]
-position = Vector2(8, 360)
-shape = SubResource("RectangleShape2D_walls")
+position = Vector2(-255, 452)
+shape = SubResource("RectangleShape2D_vxw10")
 
 [node name="RightWall" type="CollisionShape2D" parent="Walls" unique_id=1863646246]
-position = Vector2(1272, 360)
+position = Vector2(1543, 436)
 shape = SubResource("RectangleShape2D_walls")
 
 [node name="TopWall" type="CollisionShape2D" parent="Walls" unique_id=1282043946]
-position = Vector2(640, 8)
+position = Vector2(646.0001, -243.00002)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_ih7j2")
 
 [node name="BottomWall" type="CollisionShape2D" parent="Walls" unique_id=500200234]
-position = Vector2(640, 696)
+position = Vector2(651.99994, 1038.9996)
 rotation = 1.5708
 shape = SubResource("RectangleShape2D_euhyg")
 
