@@ -2,7 +2,7 @@ extends Node2D
 
 # Manages puzzle game: spawns shapes, tracks completion, timer
 
-@export var play_area_size: Vector2 = Vector2(1280, 720)
+@export var play_area_size: Vector2 = Vector2(320, 180)
 @export var shape_preview_duration: float = 1.0
 @export var tile_scene: PackedScene = preload("res://Scenes/Tile.tscn")
 
