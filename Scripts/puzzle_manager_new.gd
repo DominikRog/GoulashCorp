@@ -8,7 +8,7 @@ extends Node2D
 
 # --- VORONOI CUTTING ---
 @export var use_voronoi: bool = true  # Toggle between old grid system and new Voronoi
-@export var num_pieces: int = 9  # Number of pieces to cut shape into
+@export var num_pieces: int = 8  # Number of pieces to cut shape into
 @export var debug_show_boundaries: bool = false  # Draw piece boundaries for debugging
 var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 # -----------------------
@@ -114,6 +114,8 @@ func _physics_process(delta: float) -> void:
 
 func start_next_shape():
 	"""Begin the next shape puzzle"""
+	if goblin and goblin.has_method("reset_goblin"):
+		goblin.reset_goblin(goblin.spawn_delay_first) 
 	if current_shape_index >= current_shapes.size():
 		all_shapes_completed.emit()
 		return
