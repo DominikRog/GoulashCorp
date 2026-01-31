@@ -7,10 +7,10 @@
 [node name="MusicManager" type="Node" unique_id=1557651129]
 script = ExtResource("1_6b4sy")
 
-[node name="Music" type="AudioStreamPlayer" parent="." unique_id=1935690605]
+[node name="MenuPlayer" type="AudioStreamPlayer" parent="." unique_id=1935690605]
 stream = ExtResource("2_4y3dx")
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=545191506]
+[node name="LevelPlayer" type="AudioStreamPlayer" parent="." unique_id=545191506]
 stream = ExtResource("3_4y3dx")
 volume_db = -14.523
 autoplay = true

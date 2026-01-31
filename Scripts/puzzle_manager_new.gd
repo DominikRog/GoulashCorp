@@ -49,9 +49,7 @@ signal timer_expired
 signal shape_completed
 
 func _ready():
-	MusicManager.fade_to(-40, 0.6)
-	level_music.volume_db = -40.0
-	level_music.play()
+	MusicManager.enter_level(1.0)
 	var t := create_tween()
 	t.tween_property(level_music, "volume_db", -22.0, 0.6)
 	# --- Set window resolution to 320x180 (pixel-art friendly) ---

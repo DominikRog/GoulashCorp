@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready():
-	MusicManager.play_music()
+	MusicManager.enter_menu_or_dialogue()
 	play_button.pressed.connect(_on_play_pressed)
 
 
