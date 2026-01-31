@@ -47,6 +47,9 @@ func _ready():
 		player.visible = false
 		player.can_move = false
 
+		# Set player sprite to current character (before possession)
+		update_player_sprite()
+
 	# Show popup immediately
 	show_mind_puzzle()
 
@@ -204,6 +207,28 @@ func load_mask_sprite(character_name: String):
 			img.fill(Color(1.0, 0.8, 0.2, 1.0))  # Golden color for mask
 			mask_sprite.texture = ImageTexture.create_from_image(img)
 		print("Mask sprite not found: " + mask_path + " (using fallback)")
+
+func update_player_sprite():
+	"""Update player sprite to current character from GameManager"""
+	if not player:
+		return
+
+	var sprite = player.get_node_or_null("Sprite2D")
+	if not sprite:
+		return
+
+	# Get current character from GameManager
+	var character_name = GameManager.current_character
+	if character_name.is_empty():
+		character_name = "demon"  # Default fallback
+
+	# Try to load character sprite
+	var sprite_path = "res://Assets/" + character_name + "_full.png"
+	if ResourceLoader.exists(sprite_path):
+		sprite.texture = load(sprite_path)
+	else:
+		# Fallback: keep current sprite
+		print("Character sprite not found: " + sprite_path)
 
 func swap_character_sprite(character_name: String):
 	"""Swap player sprite to new character (instant for now)"""
