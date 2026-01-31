@@ -312,6 +312,7 @@ func complete_current_shape():
 	shape_completed.emit()
 
 	current_shape_index += 1
+	timer += 45.0
 
 	# Check if all shapes done
 	if current_shape_index >= current_shapes.size():
