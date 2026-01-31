@@ -20,6 +20,7 @@ var is_snapping: bool = false
 @onready var mask_sprite: Sprite2D = $Mask
 @onready var snap_sound: AudioStreamPlayer2D = $SnapSound
 @onready var popup: Control = $UI/Popup
+@onready var control: Control = $Control
 @onready var question_label: Label = $UI/Popup/Panel/MarginContainer/VBoxContainer/QuestionText
 @onready var choices_container: VBoxContainer = $UI/Popup/Panel/MarginContainer/VBoxContainer/ChoicesContainer
 
@@ -106,6 +107,7 @@ func _on_choice_selected(is_correct: bool):
 		# Hide popup and start player entrance
 		popup.visible = false
 		has_answered = true
+		control.visible = false
 		start_player_entrance()
 	else:
 		# Wrong answer - restart act

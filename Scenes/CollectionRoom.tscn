@@ -1,44 +1,80 @@
-[gd_scene load_steps=4 format=3 uid="uid://b8y5xk2mpqr7p"]
+[gd_scene format=3 uid="uid://b8y5xk2mpqr7p"]
 
-[ext_resource type="Script" path="res://Scripts/collection_room.gd" id="1"]
+[ext_resource type="Script" uid="uid://bolf8k2cxx0f3" path="res://Scripts/collection_room.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="2_2mdl5"]
 [ext_resource type="AudioStream" uid="uid://cjewwhk4dbecn" path="res://Audio/SUCCES.mp3" id="3"]
 
-[node name="CollectionRoom" type="Node2D"]
-script = ExtResource("1")
-play_area_size = Vector2(240, 135)
+[sub_resource type="Gradient" id="Gradient_2842h"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.5625, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
 
-[node name="Background" type="ColorRect" parent="."]
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1ws0g"]
+gradient = SubResource("Gradient_2842h")
+fill = 1
+fill_from = Vector2(0.5014245, 0.4871795)
+
+[node name="CollectionRoom" type="Node2D" unique_id=396055591]
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1419852249]
 offset_right = 240.0
 offset_bottom = 135.0
 color = Color(0.15, 0.15, 0.2, 1)
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=889155176]
 position = Vector2(120, 67.5)
-zoom = Vector2(4, 4)
+zoom = Vector2(5.34, 5.33)
 
-[node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(120, 67.5)
+[node name="Player" parent="." unique_id=1500009484 instance=ExtResource("2")]
 visible = false
+position = Vector2(120, 67.5)
 
-[node name="Mask" type="Sprite2D" parent="."]
+[node name="Mask" type="Sprite2D" parent="." unique_id=238059338]
+visible = false
 position = Vector2(160, 67.5)
-visible = false
 
-[node name="SnapSound" type="AudioStreamPlayer2D" parent="."]
+[node name="Control" type="Control" parent="." unique_id=141267943]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 240.0
+offset_bottom = 135.0
+
+[node name="Background" type="TextureRect" parent="Control" unique_id=425808874]
+layout_mode = 0
+offset_right = 240.0
+offset_bottom = 135.0
+texture = SubResource("GradientTexture2D_1ws0g")
+
+[node name="DemonFace" type="TextureRect" parent="Control" unique_id=1195969320]
+modulate = Color(1, 0, 0.08235294, 0.78431374)
+layout_mode = 0
+offset_left = 67.00001
+offset_top = -3.0000014
+offset_right = 334.0
+offset_bottom = 282.0
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_2mdl5")
+
+[node name="SnapSound" type="AudioStreamPlayer2D" parent="." unique_id=843381930]
 stream = ExtResource("3")
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=963287150]
 
-[node name="Popup" type="Control" parent="UI"]
+[node name="Popup" type="Control" parent="UI" unique_id=707162028]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -313.0
+offset_top = -75.0
+offset_right = -313.0
+offset_bottom = -75.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="Panel" parent="UI/Popup"]
+[node name="Panel" type="Panel" parent="UI/Popup" unique_id=1667208610]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -52,7 +88,7 @@ offset_bottom = 75.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="UI/Popup/Panel"]
+[node name="MarginContainer" type="MarginContainer" parent="UI/Popup/Panel" unique_id=1993663186]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -64,17 +100,17 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Popup/Panel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Popup/Panel/MarginContainer" unique_id=1589101033]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="QuestionText" type="Label" parent="UI/Popup/Panel/MarginContainer/VBoxContainer"]
+[node name="QuestionText" type="Label" parent="UI/Popup/Panel/MarginContainer/VBoxContainer" unique_id=1627323593]
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
 text = "Question text here..."
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="ChoicesContainer" type="VBoxContainer" parent="UI/Popup/Panel/MarginContainer/VBoxContainer"]
+[node name="ChoicesContainer" type="VBoxContainer" parent="UI/Popup/Panel/MarginContainer/VBoxContainer" unique_id=1462601207]
 layout_mode = 2
 theme_override_constants/separation = 6
