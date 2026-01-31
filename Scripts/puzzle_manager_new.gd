@@ -41,12 +41,19 @@ var timer_active: bool = false
 @onready var shape_display: Node2D = $ShapeDisplay
 @onready var player: CharacterBody2D = $Player
 @onready var all_snaped_sfx: AudioStreamPlayer2D = $LevelSucces
+@onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
+
 
 signal all_shapes_completed
 signal timer_expired
 signal shape_completed
 
 func _ready():
+	MusicManager.fade_to(-40, 0.6)
+	level_music.volume_db = -40.0
+	level_music.play()
+	var t := create_tween()
+	t.tween_property(level_music, "volume_db", -22.0, 0.6)
 	# --- Set window resolution to 320x180 (pixel-art friendly) ---
 	_apply_window_settings()
 	player.entrance_completed.connect(_on_player_entrance_completed)
