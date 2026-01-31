@@ -18,7 +18,7 @@ var is_snapping: bool = false
 
 @onready var player: CharacterBody2D = $Player
 @onready var mask_sprite: Sprite2D = $Mask
-@onready var control: Control = $Back
+@onready var control: Control = $Control
 @onready var popup: Control = $Popup
 @onready var question_label: Label = $Popup/QuestionText
 @onready var choices_container: VBoxContainer = $Popup/ChoicesContainer
