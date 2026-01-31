@@ -4,11 +4,17 @@ extends Node2D
 
 @export var play_area_size: Vector2 = Vector2(240, 128)
 @export var collection_distance: float = 20.0  # Distance to trigger mask collection
+@export var levitation_amplitude: float = 3.0  # How much mask moves up/down
+@export var levitation_speed: float = 2.0  # How fast mask levitates
+@export var snap_duration: float = 0.2  # Duration of snap-to-face animation
 
 var mask_position: Vector2
+var mask_base_position: Vector2  # Original position for levitation
 var player_entrance_position: Vector2
 var has_answered: bool = false
 var mask_collected: bool = false
+var levitation_time: float = 0.0
+var is_snapping: bool = false
 
 @onready var player: CharacterBody2D = $Player
 @onready var mask_sprite: Sprite2D = $Mask
@@ -16,11 +22,14 @@ var mask_collected: bool = false
 @onready var popup: Control = $Popup
 @onready var question_label: Label = $Popup/QuestionText
 @onready var choices_container: VBoxContainer = $Popup/ChoicesContainer
+@onready var snap_sound: AudioStreamPlayer2D = $SnapSound
+
 
 func _ready():
 	# Calculate positions: player at 1/3, mask at 2/3
 	player_entrance_position = Vector2(play_area_size.x / 3.0, play_area_size.y / 2.0)
-	mask_position = Vector2(play_area_size.x * 2.0 / 3.0, play_area_size.y / 2.0)
+	mask_base_position = Vector2(play_area_size.x * 2.0 / 3.0, play_area_size.y / 2.0)
+	mask_position = mask_base_position
 
 	# Get next character mask sprite
 	var act_data = GameManager.get_current_act_data()
@@ -40,15 +49,22 @@ func _ready():
 	# Show popup immediately
 	show_mind_puzzle()
 
-func _process(_delta):
-	if not has_answered or mask_collected:
+func _process(delta):
+	# Levitate mask (up and down)
+	if has_answered and not mask_collected and not is_snapping:
+		levitation_time += delta * levitation_speed
+		var offset_y = sin(levitation_time) * levitation_amplitude
+		if mask_sprite:
+			mask_sprite.global_position = mask_base_position + Vector2(0, offset_y)
+
+	if not has_answered or mask_collected or is_snapping:
 		return
 
-	# Check if player is close enough to collect mask
+	# Check if player is close enough to snap mask to face
 	if player and mask_sprite:
-		var distance = player.global_position.distance_to(mask_position)
+		var distance = player.global_position.distance_to(mask_sprite.global_position)
 		if distance <= collection_distance:
-			collect_mask()
+			snap_mask_to_face()
 
 func show_mind_puzzle():
 	"""Display mind puzzle popup (80-90% of screen)"""
@@ -109,6 +125,31 @@ func start_player_entrance():
 
 	# Walk to 1/3 position
 	player.start_entrance(entry_pos, player_entrance_position)
+
+func snap_mask_to_face():
+	"""Snap mask to player's face with animation"""
+	if is_snapping or mask_collected:
+		return
+
+	is_snapping = true
+
+	# Play snap sound with slight pitch variation
+	if snap_sound:
+		snap_sound.pitch_scale = randf_range(0.95, 1.05)
+		snap_sound.play()
+
+	# Create tween for smooth snap animation
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_IN_OUT)
+
+	# Snap to player's face position
+	if player and mask_sprite:
+		tween.tween_property(mask_sprite, "global_position", player.global_position, snap_duration)
+
+	# When snap completes, collect mask
+	await tween.finished
+	collect_mask()
 
 func collect_mask():
 	"""Collect mask and swap character sprite"""
