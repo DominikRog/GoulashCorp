@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmxhs2hmcuqy6"
-path="res://.godot/imported/farmer_mask.png-0d9ea8341d190607fb13b30441c3c14f.ctex"
+uid="uid://opm3lvkukym3"
+path="res://.godot/imported/merchant_mask.png-f51dc2b5b79a7c425ac8a6a0319add82.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/farmer_mask.png"
-dest_files=["res://.godot/imported/farmer_mask.png-0d9ea8341d190607fb13b30441c3c14f.ctex"]
+source_file="res://Assets/merchant_mask.png"
+dest_files=["res://.godot/imported/merchant_mask.png-f51dc2b5b79a7c425ac8a6a0319add82.ctex"]
 
 [params]
 
