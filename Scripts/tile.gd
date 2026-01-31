@@ -3,15 +3,15 @@ extends RigidBody2D
 # Tile piece for puzzle game
 
 @export var tile_size: int = 16
-@export var snap_threshold: float = 8.0  # Distance to snap to correct position
+@export var snap_threshold: float = 6.0  # Distance to snap to correct position
 @export var snap_force: float = 300.0
 
 # --- NEW: require correct rotation to snap ---
 @export var require_correct_rotation_for_snap: bool = true
-@export var snap_rotation_threshold_degrees: float = 10.0   # tolerancja kąta do snap (np. 10 stopni)
+@export var snap_rotation_threshold_degrees: float = 15.0   # tolerancja kąta do snap (np. 10 stopni)
 # --- NEW: smooth snap ---
-@export var snap_duration: float = 0.16
-@export var snap_rotation_duration: float = 0.24
+@export var snap_duration: float = 0.20
+@export var snap_rotation_duration: float = 0.20
 @export var snap_delay_after_scatter: float = 0.5
 # --------------------------------------------
 
