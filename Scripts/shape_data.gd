@@ -70,8 +70,8 @@ var acts = {
 	},
 	6: {
 		"character": "queen",
-		"next_character": "victory",
-		"shapes": ["throne", "orb"],  # Placeholder - will be defined later
+		"next_character": "king",
+		"shapes": ["Clue_Queen_1", "Clue_Queen_2"],  # Using Queen clues for now until King shapes exist
 		"question": "Who, with a single decision, can alter hundreds more?",
 		"answers": [
 			{"text": "King", "correct": true},

@@ -196,7 +196,8 @@ func _on_choice_selected(is_correct: bool, choice_text: String):
 
 				# Check if game is won
 				if GameManager.current_act > 6:
-					show_victory()
+					# Go to finale scene (king explosion)
+					get_tree().change_scene_to_file("res://Scenes/FinaleScene.tscn")
 				else:
 					# Next act puzzle
 					get_tree().change_scene_to_file("res://Scenes/PuzzleGame.tscn")
