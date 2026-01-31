@@ -55,7 +55,7 @@ func scatter_to(target_pos: Vector2):
 	var direction = (target_pos - global_position).normalized()
 	# Add more angle spread for better distribution
 	direction = direction.rotated(randf_range(-0.6, 0.6))
-	var speed = randf_range(500.0, 700.0)
+	var speed = randf_range(1000.0, 1300.0)
 	linear_velocity = direction * speed
 	# Add slight random angular velocity for natural movement (but rotation is locked)
 	angular_velocity = 0.0  # Keep at 0 since rotation is locked

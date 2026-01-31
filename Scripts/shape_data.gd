@@ -6,7 +6,7 @@ var acts = {
 	1: {
 		"character": "demon",
 		"next_character": "farmer",
-		"shapes": ["scythe", "wheat"],
+		"shapes": ["placeholder", "wheat"],
 		"question": "What did you do your whole life?",
 		"answers": [
 			{"text": "Slave away at a farm", "correct": true},

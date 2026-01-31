@@ -10,7 +10,7 @@ extends Node2D
 @export var target_window_size: Vector2i = Vector2i(320, 180)
 @export var use_integer_scale: bool = true
 @export var tile_friction: float = 2.5
-@export var tile_bounce: float = 0.0
+@export var tile_bounce: float = 10.0
 @export var disable_collision_when_snapped: bool = true
 @export var freeze_tile_when_snapped: bool = true
 # ------------------------------------------------------------------------
@@ -34,6 +34,7 @@ signal shape_completed
 func _ready():
 	# --- Set window resolution to 320x180 (pixel-art friendly) ---
 	_apply_window_settings()
+	player.entrance_completed.connect(_on_player_entrance_completed)
 	# ------------------------------------------------------------
 
 	# Get current act data
@@ -44,7 +45,7 @@ func _ready():
 
 	var shapes_data = act_data.get("shapes", [])
 	current_shapes.assign(shapes_data)
-	timer = act_data.get("timer", 45.0)
+	timer = act_data.get("timer", 60.0)
 
 	GameManager.total_shapes_in_act = current_shapes.size()
 
@@ -81,8 +82,9 @@ func start_next_shape():
 
 	# Split and scatter
 	spawn_and_scatter_tiles(shape_name)
-
-	# Start timer
+	
+		# Start timer
+func _on_player_entrance_completed():
 	timer_active = true
 
 func show_shape_preview(shape_name: String):
@@ -338,7 +340,7 @@ func restart_puzzle():
 
 	# Reset timer
 	var act_data = GameManager.get_current_act_data()
-	timer = act_data.get("timer", 45.0)
+	timer = act_data.get("timer", 60.0)
 
 	# Restart same shape
 	current_shape_index = max(0, current_shape_index)
