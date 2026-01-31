@@ -419,6 +419,7 @@ func _on_tile_snapped(index: int):
 			break
 
 	if all_snapped:
+		timer_active = false
 		all_snaped_sfx.play()
 		await all_snaped_sfx.finished
 		complete_current_shape()
