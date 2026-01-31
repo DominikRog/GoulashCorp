@@ -38,7 +38,7 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 64
-text = "Get To The King!"
+text = "Get To The King"
 horizontal_alignment = 1
 
 [node name="Quote" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1489536066]
