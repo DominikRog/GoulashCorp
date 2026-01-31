@@ -6,14 +6,21 @@ extends Node2D
 @export var shape_preview_duration: float = 1.0
 @export var tile_scene: PackedScene = preload("res://Scenes/Tile.tscn")
 
-# --- NEW: window / scaling + tile friction + snapped collision behavior ---
+# --- window / scaling + tile friction + snapped collision behavior ---
 @export var target_window_size: Vector2i = Vector2i(320, 180)
 @export var use_integer_scale: bool = true
 @export var tile_friction: float = 2.5
 @export var tile_bounce: float = 10.0
 @export var disable_collision_when_snapped: bool = true
 @export var freeze_tile_when_snapped: bool = true
-# ------------------------------------------------------------------------
+# --------------------------------------------------------------------
+
+# --- NEW: wall "magnetic" repulsion for tiles ---
+@export var wall_repulsion_enabled: bool = true
+@export var wall_repulsion_range: float = 16.0          # px from wall where repulsion starts
+@export var wall_repulsion_strength: float = 24000.0    # overall strength of the field
+@export var wall_repulsion_margin: float = 8.0         # where the "wall line" is inside play area
+# ------------------------------------------------
 
 var current_shapes: Array[String] = []
 var current_shape_index: int = 0
@@ -68,6 +75,11 @@ func _process(delta):
 			timer_active = false
 			timer_expired.emit()
 
+func _physics_process(delta: float) -> void:
+	# Apply magnetic-like repulsion from play area edges to tiles
+	if wall_repulsion_enabled:
+		_apply_wall_repulsion(delta)
+
 func start_next_shape():
 	"""Begin the next shape puzzle"""
 	if current_shape_index >= current_shapes.size():
@@ -82,8 +94,10 @@ func start_next_shape():
 
 	# Split and scatter
 	spawn_and_scatter_tiles(shape_name)
-	
-		# Start timer
+
+	# Start timer is triggered when player entrance finishes
+	# (see _on_player_entrance_completed)
+
 func _on_player_entrance_completed():
 	timer_active = true
 
@@ -294,11 +308,9 @@ func _on_tile_snapped(index: int):
 	if index < tile_slots.size():
 		tile_slots[index].set_filled(true)
 
-	# NEW: make the snapped tile stop blocking the player / other tiles
-	# We identify snapped tiles by their tile_index == slot index.
+	# Make the snapped tile stop blocking the player / other tiles
 	if disable_collision_when_snapped:
 		for tile in tiles:
-			# tile.tile_index exists in your flow; no renaming.
 			if tile.tile_index == index:
 				_disable_tile_collision(tile)
 				if freeze_tile_when_snapped:
@@ -389,7 +401,6 @@ func update_timer_display():
 
 func _on_all_shapes_completed():
 	"""All shapes in act are done, move to mind puzzle"""
-	# Transition to dialogue for mind puzzle
 	get_tree().change_scene_to_file("res://Scenes/Dialogue.tscn")
 
 func _on_timer_expired():
@@ -397,19 +408,13 @@ func _on_timer_expired():
 	restart_puzzle()
 
 # ============================================================
-# Helper functions (NEW) - no renaming of your existing vars
+# Helper functions
 # ============================================================
 
 func _apply_window_settings():
-	# Sets actual window size. For pixel-art you usually also set viewport stretch in Project Settings,
-	# but this at least enforces the base window size from code.
 	if target_window_size.x > 0 and target_window_size.y > 0:
 		DisplayServer.window_set_size(target_window_size)
 
-	# If you want pixel-perfect integer scaling, it is best done in:
-	# Project Settings -> Display -> Window -> Stretch:
-	#   Mode = canvas_items, Aspect = keep, Scale = integer
-	# BUT we can approximate by snapping the window scale to an integer factor here.
 	if use_integer_scale:
 		var screen_size: Vector2i = Vector2i(DisplayServer.screen_get_size())
 
@@ -428,7 +433,6 @@ func _apply_window_settings():
 		DisplayServer.window_set_size(final_size)
 
 func _apply_tile_friction(tile: RigidBody2D):
-	# PhysicsMaterial in Godot 4 (2D) is applied via physics_material_override on CollisionObject2D (RigidBody2D here)
 	var mat: PhysicsMaterial = PhysicsMaterial.new()
 	mat.friction = tile_friction
 	mat.bounce = 0.0  # No bounce for puzzle feel
@@ -439,14 +443,71 @@ func _apply_tile_friction(tile: RigidBody2D):
 	# (linear_damp = 3.0, angular_damp = 2.0 for natural rotation)
 
 func _disable_tile_collision(tile: RigidBody2D):
-	# Easiest reliable way: remove it from all layers/masks so it stops blocking.
-	# (Works without needing to know what else is in the world.)
 	tile.collision_layer = 0
 	tile.collision_mask = 0
 
-	# Optional extra: disable all collision shapes/polygons
 	for child in tile.get_children():
 		if child is CollisionShape2D:
 			child.disabled = true
 		elif child is CollisionPolygon2D:
 			child.disabled = true
+
+func _apply_wall_repulsion(delta: float) -> void:
+	# Repel tiles from the play area edges like a magnetic field.
+	# Stronger near the wall, fades to zero at wall_repulsion_range.
+
+	var rng: float = wall_repulsion_range
+	if rng < 1.0:
+		rng = 1.0
+
+	var strength: float = wall_repulsion_strength
+
+	# Define inner "wall lines"
+	var left_x: float = wall_repulsion_margin
+	var right_x: float = play_area_size.x - wall_repulsion_margin
+	var top_y: float = wall_repulsion_margin
+	var bottom_y: float = play_area_size.y - wall_repulsion_margin
+
+	for t in tiles:
+		var tile: RigidBody2D = t
+		if tile == null:
+			continue
+		if tile.freeze:
+			continue
+		if tile.collision_layer == 0:
+			continue
+
+		var p: Vector2 = tile.global_position
+		var force: Vector2 = Vector2.ZERO
+
+		# Left wall
+		var dl: float = p.x - left_x
+		if dl < rng:
+			var k: float = 1.0 - (dl / rng)
+			if k > 0.0:
+				force.x += strength * k * k
+
+		# Right wall
+		var dr: float = right_x - p.x
+		if dr < rng:
+			var k2: float = 1.0 - (dr / rng)
+			if k2 > 0.0:
+				force.x -= strength * k2 * k2
+
+		# Top wall
+		var dt: float = p.y - top_y
+		if dt < rng:
+			var k3: float = 1.0 - (dt / rng)
+			if k3 > 0.0:
+				force.y += strength * k3 * k3
+
+		# Bottom wall
+		var db: float = bottom_y - p.y
+		if db < rng:
+			var k4: float = 1.0 - (db / rng)
+			if k4 > 0.0:
+				force.y -= strength * k4 * k4
+
+		if force != Vector2.ZERO:
+			# Scale by delta so it feels stable across FPS
+			tile.apply_central_force(force * delta)
