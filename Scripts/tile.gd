@@ -20,6 +20,7 @@ var can_snap: bool = false  # Prevent snapping until scattered
 # --- NEW: internal state ---
 var _is_snapping: bool = false
 var _snap_tween: Tween = null
+@onready var snap_sound: AudioStreamPlayer2D = $CorrectTile
 # ---------------------------
 
 signal tile_snapped(index: int)
@@ -62,6 +63,10 @@ func _start_smooth_snap():
 	if _snap_tween != null:
 		_snap_tween.kill()
 		_snap_tween = null
+		
+	if snap_sound:
+		snap_sound.pitch_scale = randf_range(0.95, 1.05)
+		snap_sound.play()
 
 	# Create tween to slide into place
 	_snap_tween = create_tween()
