@@ -72,7 +72,7 @@ func _ready():
 	GameManager.total_shapes_in_act = current_shapes.size()
 
 	# Position player at center and hide initially
-	shape_center = play_area_size / 2
+	shape_center = play_area_size / 2.0
 	if player:
 		player.global_position = shape_center
 		player.visible = false
@@ -273,7 +273,7 @@ func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
 		var tile = tile_scene.instantiate()
 
 		var tile_x = i % 3
-		var tile_y = i / 3
+		var tile_y = int(i / 3)
 		var tile_texture = extract_tile_texture(shape_texture, tile_x, tile_y)
 
 		tile.shape_id = shape_name
@@ -482,7 +482,7 @@ func restart_puzzle():
 
 func update_timer_display():
 	if timer_label:
-		var minutes = int(timer) / 60
+		var minutes = int(timer / 60)
 		var seconds = int(timer) % 60
 		timer_label.text = "%02d:%02d" % [minutes, seconds]
 
@@ -515,11 +515,11 @@ func _apply_window_settings():
 
 		var scale_x: int = int(screen_size.x / tw)
 		var scale_y: int = int(screen_size.y / th)
-		var scale: int = int(min(scale_x, scale_y))
-		if scale < 1:
-			scale = 1
+		var window_scale: int = int(min(scale_x, scale_y))
+		if window_scale < 1:
+			window_scale = 1
 
-		var final_size: Vector2i = Vector2i(int(target_window_size.x) * scale, int(target_window_size.y) * scale)
+		var final_size: Vector2i = Vector2i(int(target_window_size.x) * window_scale, int(target_window_size.y) * window_scale)
 		DisplayServer.window_set_size(final_size)
 
 func _apply_tile_friction(tile: RigidBody2D):

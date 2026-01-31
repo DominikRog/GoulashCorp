@@ -23,7 +23,7 @@ buses/default_bus_layout="uid://dmq47w7bt0psc"
 
 GameManager="*res://Scripts/game_manager.gd"
 ShapeData="*res://Scripts/shape_data.gd"
-MusicManager="*uid://d30mvo5r52g6r"
+MusicManager="*res://Scenes/MusicManager.tscn"
 
 [display]
 
