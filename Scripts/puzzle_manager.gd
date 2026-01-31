@@ -2,18 +2,9 @@ extends Node2D
 
 # Manages puzzle game: spawns shapes, tracks completion, timer
 
-@export var play_area_size: Vector2 = Vector2(1280, 720)
+@export var play_area_size: Vector2 = Vector2(320, 180)
 @export var shape_preview_duration: float = 1.0
 @export var tile_scene: PackedScene = preload("res://Scenes/Tile.tscn")
-
-# --- NEW: window / scaling + tile friction + snapped collision behavior ---
-@export var target_window_size: Vector2i = Vector2i(320, 180)
-@export var use_integer_scale: bool = true
-@export var tile_friction: float = 2.5
-@export var tile_bounce: float = 0.0
-@export var disable_collision_when_snapped: bool = true
-@export var freeze_tile_when_snapped: bool = true
-# ------------------------------------------------------------------------
 
 var current_shapes: Array[String] = []
 var current_shape_index: int = 0
@@ -32,10 +23,6 @@ signal timer_expired
 signal shape_completed
 
 func _ready():
-	# --- Set window resolution to 320x180 (pixel-art friendly) ---
-	_apply_window_settings()
-	# ------------------------------------------------------------
-
 	# Get current act data
 	var act_data = GameManager.get_current_act_data()
 	if act_data.is_empty():
@@ -143,7 +130,6 @@ func spawn_and_scatter_tiles(shape_name: String):
 
 	# Create tile slots (render behind tiles)
 	create_tile_slots(correct_positions)
-
 	# Create tiles at their correct grid positions first
 	for i in range(9):
 		var tile = tile_scene.instantiate()
@@ -160,9 +146,6 @@ func spawn_and_scatter_tiles(shape_name: String):
 
 		# Add to tree (this triggers _ready)
 		add_child(tile)
-
-		# Apply friction / material so tiles don't slide like on ice
-		_apply_tile_friction(tile)
 
 		# Set texture/sprite after node is in tree
 		var sprite = tile.get_node("Sprite2D")
@@ -200,13 +183,13 @@ func spawn_and_scatter_tiles(shape_name: String):
 		var scatter_pos = get_random_scatter_position()
 		tile.scatter_to(scatter_pos)
 
-	# Show player after 2.0 second delay (let tiles scatter and settle)
-	await get_tree().create_timer(2.0).timeout
+	# Show player after 0.5 second delay (let tiles scatter and settle)
+	await get_tree().create_timer(0.5).timeout
 	if player:
 		# Player enters from bottom
-		var entry_pos = Vector2(shape_center.x, play_area_size.y + 50)
+		var entry_pos = Vector2(shape_center.x, play_area_size.y + 60)
 		# Target is below the shape with offset
-		var target_pos = Vector2(shape_center.x, shape_center.y + 60)
+		var target_pos = Vector2(shape_center.x, shape_center.y + 40)
 		player.start_entrance(entry_pos, target_pos)
 
 func load_shape_texture(shape_name: String) -> Texture2D:
@@ -265,17 +248,6 @@ func _on_tile_snapped(index: int):
 	# Update slot visual
 	if index < tile_slots.size():
 		tile_slots[index].set_filled(true)
-
-	# NEW: make the snapped tile stop blocking the player / other tiles
-	# We identify snapped tiles by their tile_index == slot index.
-	if disable_collision_when_snapped:
-		for tile in tiles:
-			# tile.tile_index exists in your flow; no renaming.
-			if tile.tile_index == index:
-				_disable_tile_collision(tile)
-				if freeze_tile_when_snapped:
-					tile.freeze = true
-				break
 
 	# Check if all tiles are snapped
 	var all_snapped = true
@@ -366,58 +338,3 @@ func _on_all_shapes_completed():
 func _on_timer_expired():
 	"""Timer ran out, restart puzzle"""
 	restart_puzzle()
-
-# ============================================================
-# Helper functions (NEW) - no renaming of your existing vars
-# ============================================================
-
-func _apply_window_settings():
-	# Sets actual window size. For pixel-art you usually also set viewport stretch in Project Settings,
-	# but this at least enforces the base window size from code.
-	if target_window_size.x > 0 and target_window_size.y > 0:
-		DisplayServer.window_set_size(target_window_size)
-
-	# If you want pixel-perfect integer scaling, it is best done in:
-	# Project Settings -> Display -> Window -> Stretch:
-	#   Mode = canvas_items, Aspect = keep, Scale = integer
-	# BUT we can approximate by snapping the window scale to an integer factor here.
-	if use_integer_scale:
-		var screen_size: Vector2i = Vector2i(DisplayServer.screen_get_size())
-
-		var tw: int = int(target_window_size.x)
-		var th: int = int(target_window_size.y)
-		if tw <= 0: tw = 1
-		if th <= 0: th = 1
-
-		var scale_x: int = int(screen_size.x / tw)
-		var scale_y: int = int(screen_size.y / th)
-		var scale: int = int(min(scale_x, scale_y))
-		if scale < 1:
-			scale = 1
-
-		var final_size: Vector2i = Vector2i(int(target_window_size.x) * scale, int(target_window_size.y) * scale)
-		DisplayServer.window_set_size(final_size)
-
-func _apply_tile_friction(tile: RigidBody2D):
-	# PhysicsMaterial in Godot 4 (2D) is applied via physics_material_override on CollisionObject2D (RigidBody2D here)
-	var mat: PhysicsMaterial = PhysicsMaterial.new()
-	mat.friction = tile_friction
-	mat.bounce = tile_bounce
-
-	tile.physics_material_override = mat
-
-	# Optional but very helpful: reduces "ice sliding" by damping movement/rotation
-	# You can tune these or export them if you want later.
-	tile.linear_damp = 10.0
-	tile.angular_damp = 10.0
-
-func _disable_tile_collision(tile: RigidBody2D):
-	# Easiest reliable way: remove it from all layers/masks so it stops blocking.
-	# (Works without needing to know what else is in the world.)
-	tile.collision_layer = 0
-	tile.collision_mask = 0
-
-	# Optional extra: if the tile has a CollisionShape2D, disable it too.
-	var cs := tile.get_node_or_null("CollisionShape2D")
-	if cs and cs is CollisionShape2D:
-		cs.disabled = true
