@@ -6,6 +6,13 @@ extends Node2D
 @export var shape_preview_duration: float = 1.0
 @export var tile_scene: PackedScene = preload("res://Scenes/Tile.tscn")
 
+# --- VORONOI CUTTING ---
+@export var use_voronoi: bool = true  # Toggle between old grid system and new Voronoi
+@export var num_pieces: int = 9  # Number of pieces to cut shape into
+@export var debug_show_boundaries: bool = false  # Draw piece boundaries for debugging
+var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
+# -----------------------
+
 # --- window / scaling + tile friction + snapped collision behavior ---
 @export var target_window_size: Vector2i = Vector2i(320, 180)
 @export var use_integer_scale: bool = true
@@ -145,10 +152,115 @@ func create_shape_preview(shape_name: String) -> Node2D:
 	return container
 
 func spawn_and_scatter_tiles(shape_name: String):
-	"""Create 9 tiles and scatter them randomly"""
+	"""Create tiles and scatter them randomly - supports Voronoi or grid mode"""
 	# Load shape texture (48x48 PNG)
 	var shape_texture = load_shape_texture(shape_name)
 
+	if use_voronoi and shape_texture:
+		await spawn_voronoi_tiles(shape_name, shape_texture)
+	else:
+		await spawn_grid_tiles(shape_name, shape_texture)
+
+func spawn_voronoi_tiles(shape_name: String, shape_texture: Texture2D):
+	"""Create tiles using Voronoi cutting algorithm"""
+	# Get image data for cutting
+	var shape_image = shape_texture.get_image()
+	if shape_image == null:
+		push_error("Failed to get image from texture")
+		await spawn_grid_tiles(shape_name, shape_texture)
+		return
+
+	# Cut shape into Voronoi pieces
+	var cutter = VoronoiCutter.new()
+	var pieces: Array = cutter.cut_shape(shape_image, num_pieces)
+
+	if pieces.is_empty():
+		push_error("Voronoi cutting failed, falling back to grid")
+		await spawn_grid_tiles(shape_name, shape_texture)
+		return
+
+	print("VoronoiCutter: Generated %d pieces" % pieces.size())
+
+	# Create correct positions for each piece (at shape center)
+	var correct_positions: Array[Vector2] = []
+	for piece in pieces:
+		var world_pos = shape_center + piece.centroid - Vector2(24, 24)  # Center the 48x48 shape
+		correct_positions.append(world_pos)
+
+	# Create tile slots with Voronoi shapes
+	create_voronoi_tile_slots(pieces, correct_positions)
+
+	# Create tiles from Voronoi pieces
+	for i in range(pieces.size()):
+		var piece = pieces[i]
+		var tile = tile_scene.instantiate()
+
+		# Setup tile data BEFORE adding to tree
+		tile.shape_id = shape_name
+		tile.tile_index = i
+		tile.correct_position = correct_positions[i]
+
+		# Add to tree (this triggers _ready)
+		add_child(tile)
+
+		# Apply friction
+		_apply_tile_friction(tile)
+
+		# Set texture from Voronoi piece
+		var sprite = tile.get_node("Sprite2D")
+		if piece.texture_region:
+			var texture = ImageTexture.create_from_image(piece.texture_region)
+			sprite.texture = texture
+
+			# FIXED: Correct sprite offset calculation
+			# Sprite is centered by default, so we need to offset it so that
+			# the centroid pixel in the texture aligns with the tile position
+			var texture_center = Vector2(piece.bounding_rect.size) / 2.0
+			var centroid_in_texture = piece.centroid - Vector2(piece.bounding_rect.position)
+			sprite.offset = texture_center - centroid_in_texture
+		else:
+			# Fallback: colored square
+			var color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0), 1.0)
+			var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+			img.fill(color)
+			var texture_img = ImageTexture.create_from_image(img)
+			sprite.texture = texture_img
+
+		# Setup collision from Voronoi boundary
+		setup_voronoi_collision(tile, piece)
+
+		# Position tile at correct location
+		tile.global_position = correct_positions[i]
+
+		# FREEZE tiles immediately
+		tile.freeze = true
+
+		# Connect snapped signal
+		tile.tile_snapped.connect(_on_tile_snapped)
+
+		tiles.append(tile)
+
+	# Wait a moment so tiles are visible in formation
+	await get_tree().create_timer(0.3).timeout
+
+	# Scatter tiles
+	for tile in tiles:
+		tile.freeze = false
+		tile.collision_layer = 2
+		tile.collision_mask = 7
+
+		var scatter_pos = get_random_scatter_position()
+		tile.scatter_to(scatter_pos)
+
+	# Show player after delay
+	await get_tree().create_timer(2.0).timeout
+	if player:
+		var entry_pos = Vector2(shape_center.x, play_area_size.y + 50)
+		var target_pos = Vector2(shape_center.x, shape_center.y + 60)
+		player.start_entrance(entry_pos, target_pos)
+
+func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
+	"""Create tiles using original 3x3 grid system"""
 	# Calculate correct positions (3x3 grid centered)
 	var correct_positions: Array[Vector2] = []
 	for y in range(3):
@@ -294,12 +406,33 @@ func get_random_scatter_position() -> Vector2:
 	return shape_center + Vector2(cos(angle), sin(angle)) * distance
 
 func create_tile_slots(positions: Array[Vector2]):
-	"""Create visual slot indicators at tile positions"""
+	"""Create visual slot indicators at tile positions (grid mode)"""
 	for i in range(positions.size()):
 		var slot = Node2D.new()
 		slot.set_script(load("res://Scripts/tile_slot.gd"))
 		add_child(slot)
 		slot.setup(i, positions[i])
+		tile_slots.append(slot)
+
+func create_voronoi_tile_slots(pieces: Array, positions: Array[Vector2]):
+	"""Create visual slot indicators showing Voronoi piece shapes"""
+	for i in range(pieces.size()):
+		var piece = pieces[i]
+		var slot = Node2D.new()
+		slot.set_script(load("res://Scripts/tile_slot.gd"))
+		add_child(slot)
+
+		# Pass piece shape data to slot
+		var world_boundary = PackedVector2Array()
+		for point in piece.boundary:
+			world_boundary.append(shape_center + point - Vector2(24, 24))
+
+		# Calculate sprite offset (same as tile - FIXED)
+		var texture_center = Vector2(piece.bounding_rect.size) / 2.0
+		var centroid_in_texture = piece.centroid - Vector2(piece.bounding_rect.position)
+		var sprite_offset = texture_center - centroid_in_texture
+
+		slot.setup_voronoi(i, positions[i], piece.texture_region, world_boundary, sprite_offset)
 		tile_slots.append(slot)
 
 func _on_tile_snapped(index: int):
@@ -511,3 +644,34 @@ func _apply_wall_repulsion(delta: float) -> void:
 		if force != Vector2.ZERO:
 			# Scale by delta so it feels stable across FPS
 			tile.apply_central_force(force * delta)
+
+func setup_voronoi_collision(tile: RigidBody2D, piece):
+	"""Setup collision polygon from Voronoi piece boundary"""
+	# Remove existing collision shapes
+	for child in tile.get_children():
+		if child is CollisionShape2D or child is CollisionPolygon2D:
+			child.queue_free()
+
+	if piece.boundary.is_empty():
+		push_warning("Voronoi piece has empty boundary, using fallback collision")
+		# Fallback: rectangle
+		var fallback_shape = CollisionShape2D.new()
+		var rect_shape = RectangleShape2D.new()
+		rect_shape.size = Vector2(16, 16)
+		fallback_shape.shape = rect_shape
+		tile.add_child(fallback_shape)
+		return
+
+	# Create collision polygon from boundary
+	var collision_polygon = CollisionPolygon2D.new()
+
+	# Convert boundary to local coordinates (relative to centroid)
+	var local_boundary = PackedVector2Array()
+	for point in piece.boundary:
+		var local_point = point - piece.centroid
+		local_boundary.append(local_point)
+
+	collision_polygon.polygon = local_boundary
+	tile.add_child(collision_polygon)
+
+	print("Created collision polygon with %d vertices for piece %d" % [local_boundary.size(), piece.id])
