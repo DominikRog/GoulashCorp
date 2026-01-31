@@ -19,7 +19,8 @@ var current_question_data: Dictionary = {}
 signal dialogue_completed
 signal answer_selected(correct: bool)
 
-func _ready():
+func _ready() -> void:
+	MusicManager.resume_if_not_playing()
 	# Determine what dialogue to show based on game state
 	if GameManager.current_act == 1 and GameManager.is_puzzle_phase:
 		# Opening dialogue

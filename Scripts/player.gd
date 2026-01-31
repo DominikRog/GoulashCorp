@@ -109,6 +109,11 @@ func _physics_process(delta: float) -> void:
 
 		if input_vector.length() > 0.0:
 			last_move_dir = input_vector
+			# --- flip sprite left/right ---
+		if input_vector.x < -0.01:
+			sprite.flip_h = true
+		elif input_vector.x > 0.01:
+			sprite.flip_h = false
 
 		var current_speed: float = speed
 		if grabbed_tile != null:
