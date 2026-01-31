@@ -43,10 +43,22 @@ var timer_active: bool = false
 @onready var all_snaped_sfx: AudioStreamPlayer2D = $LevelSucces
 @onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
 
+@onready var goblin: CharacterBody2D = $Goblin
 
 signal all_shapes_completed
 signal timer_expired
 signal shape_completed
+
+# ------------------------------------------------------------
+# IMPORTANT: Give goblin puzzle_manager BEFORE goblin._ready()
+# ------------------------------------------------------------
+func _enter_tree() -> void:
+	# If Goblin exists in the scene tree, set reference ASAP.
+	# _enter_tree happens early enough that the goblin will see it in _ready().
+	if has_node("Goblin"):
+		var g = get_node("Goblin")
+		# Use set() so we don't depend on a typed property existing.
+		g.set("puzzle_manager", self)
 
 func _ready():
 	MusicManager.fade_to(-40, 0.6)
@@ -58,6 +70,11 @@ func _ready():
 	_apply_window_settings()
 	player.entrance_completed.connect(_on_player_entrance_completed)
 	# ------------------------------------------------------------
+
+	# (Safety) If for any reason goblin didn't get it in _enter_tree (e.g., moved in tree),
+	# set it here too. This does NOT hurt.
+	if goblin:
+		goblin.set("puzzle_manager", self)
 
 	# Get current act data
 	var act_data = GameManager.get_current_act_data()
@@ -162,14 +179,12 @@ func spawn_and_scatter_tiles(shape_name: String):
 
 func spawn_voronoi_tiles(shape_name: String, shape_texture: Texture2D):
 	"""Create tiles using Voronoi cutting algorithm"""
-	# Get image data for cutting
 	var shape_image = shape_texture.get_image()
 	if shape_image == null:
 		push_error("Failed to get image from texture")
 		await spawn_grid_tiles(shape_name, shape_texture)
 		return
 
-	# Cut shape into Voronoi pieces
 	var cutter = VoronoiCutter.new()
 	var pieces: Array = cutter.cut_shape(shape_image, num_pieces)
 
@@ -180,69 +195,53 @@ func spawn_voronoi_tiles(shape_name: String, shape_texture: Texture2D):
 
 	print("VoronoiCutter: Generated %d pieces" % pieces.size())
 
-	# Create correct positions for each piece (at shape center)
 	var correct_positions: Array[Vector2] = []
 	for piece in pieces:
-		var world_pos = shape_center + piece.centroid - Vector2(24, 24)  # Center the 48x48 shape
+		var world_pos = shape_center + piece.centroid - Vector2(24, 24)
 		correct_positions.append(world_pos)
 
-	# Create tile slots with Voronoi shapes
 	create_voronoi_tile_slots(pieces, correct_positions)
 
-	# Create tiles from Voronoi pieces
 	for i in range(pieces.size()):
 		var piece = pieces[i]
 		var tile = tile_scene.instantiate()
 
-		# Setup tile data BEFORE adding to tree
 		tile.shape_id = shape_name
 		tile.tile_index = i
 		tile.correct_position = correct_positions[i]
 
-		# Add to tree (this triggers _ready)
 		add_child(tile)
 
-		# Apply friction
 		_apply_tile_friction(tile)
 
-		# Set texture from Voronoi piece
 		var sprite = tile.get_node("Sprite2D")
 		if piece.texture_region:
 			var texture = ImageTexture.create_from_image(piece.texture_region)
 			sprite.texture = texture
 
-			# FIXED: Correct sprite offset calculation
-			# Sprite is centered by default, so we need to offset it so that
-			# the centroid pixel in the texture aligns with the tile position
 			var texture_center = Vector2(piece.bounding_rect.size) / 2.0
 			var centroid_in_texture = piece.centroid - Vector2(piece.bounding_rect.position)
 			sprite.offset = texture_center - centroid_in_texture
 		else:
-			# Fallback: colored square
 			var color = Color(randf_range(0.5, 1.0), randf_range(0.5, 1.0), randf_range(0.5, 1.0), 1.0)
 			var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
 			img.fill(color)
 			var texture_img = ImageTexture.create_from_image(img)
 			sprite.texture = texture_img
 
-		# Setup collision from Voronoi boundary
 		setup_voronoi_collision(tile, piece)
 
-		# Position tile at correct location
 		tile.global_position = correct_positions[i]
 
-		# FREEZE tiles immediately
+		# store correct/original rotation for this tile (important for rotation goals)
+		_set_tile_correct_rotation(tile, tile.rotation)
+
 		tile.freeze = true
-
-		# Connect snapped signal
 		tile.tile_snapped.connect(_on_tile_snapped)
-
 		tiles.append(tile)
 
-	# Wait a moment so tiles are visible in formation
 	await get_tree().create_timer(0.3).timeout
 
-	# Scatter tiles
 	for tile in tiles:
 		tile.freeze = false
 		tile.collision_layer = 2
@@ -251,7 +250,6 @@ func spawn_voronoi_tiles(shape_name: String, shape_texture: Texture2D):
 		var scatter_pos = get_random_scatter_position()
 		tile.scatter_to(scatter_pos)
 
-	# Show player after delay
 	await get_tree().create_timer(2.0).timeout
 	if player:
 		var entry_pos = Vector2(shape_center.x, play_area_size.y + 50)
@@ -260,7 +258,6 @@ func spawn_voronoi_tiles(shape_name: String, shape_texture: Texture2D):
 
 func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
 	"""Create tiles using original 3x3 grid system"""
-	# Calculate correct positions (3x3 grid centered)
 	var correct_positions: Array[Vector2] = []
 	for y in range(3):
 		for x in range(3):
@@ -301,18 +298,11 @@ func spawn_grid_tiles(shape_name: String, shape_texture: Texture2D):
 		if tile_image:
 			tile.setup_collision_from_image(tile_image)
 
-		# Position tile at its CORRECT position in the 3x3 grid
 		tile.global_position = correct_positions[i]
 
-		# --- NEW: store the "correct/original" rotation for this tile (for grab-align) ---
-		# This is best-effort: if tile.gd doesn't define it, it won't crash.
-		# We want the tile to align to the rotation it has in the solved puzzle.
 		_set_tile_correct_rotation(tile, tile.rotation)
-		# ------------------------------------------------------------------------------
 
-		# Prevent physics movement before scatter
 		tile.freeze = true
-
 		tile.tile_snapped.connect(_on_tile_snapped)
 		tiles.append(tile)
 
@@ -395,12 +385,10 @@ func create_voronoi_tile_slots(pieces: Array, positions: Array[Vector2]):
 		slot.set_script(load("res://Scripts/tile_slot.gd"))
 		add_child(slot)
 
-		# Pass piece shape data to slot
 		var world_boundary = PackedVector2Array()
 		for point in piece.boundary:
 			world_boundary.append(shape_center + point - Vector2(24, 24))
 
-		# Calculate sprite offset (same as tile - FIXED)
 		var texture_center = Vector2(piece.bounding_rect.size) / 2.0
 		var centroid_in_texture = piece.centroid - Vector2(piece.bounding_rect.position)
 		var sprite_offset = texture_center - centroid_in_texture
@@ -465,6 +453,9 @@ func restart_puzzle():
 	if player:
 		player.visible = false
 		player.can_move = false
+		
+	if goblin:
+		goblin.reset_goblin(5.0)
 
 	for tile in tiles:
 		tile.queue_free()
@@ -525,7 +516,7 @@ func _apply_window_settings():
 func _apply_tile_friction(tile: RigidBody2D):
 	var mat: PhysicsMaterial = PhysicsMaterial.new()
 	mat.friction = tile_friction
-	mat.bounce = 0.0  # No bounce for puzzle feel
+	mat.bounce = 0.0
 	tile.physics_material_override = mat
 
 func _disable_tile_collision(tile: RigidBody2D):
@@ -591,14 +582,12 @@ func _apply_wall_repulsion(delta: float) -> void:
 
 func setup_voronoi_collision(tile: RigidBody2D, piece):
 	"""Setup collision polygon from Voronoi piece boundary"""
-	# Remove existing collision shapes
 	for child in tile.get_children():
 		if child is CollisionShape2D or child is CollisionPolygon2D:
 			child.queue_free()
 
 	if piece.boundary.is_empty():
 		push_warning("Voronoi piece has empty boundary, using fallback collision")
-		# Fallback: rectangle
 		var fallback_shape = CollisionShape2D.new()
 		var rect_shape = RectangleShape2D.new()
 		rect_shape.size = Vector2(16, 16)
@@ -606,10 +595,8 @@ func setup_voronoi_collision(tile: RigidBody2D, piece):
 		tile.add_child(fallback_shape)
 		return
 
-	# Create collision polygon from boundary
 	var collision_polygon = CollisionPolygon2D.new()
 
-	# Convert boundary to local coordinates (relative to centroid)
 	var local_boundary = PackedVector2Array()
 	for point in piece.boundary:
 		var local_point = point - piece.centroid
@@ -620,19 +607,32 @@ func setup_voronoi_collision(tile: RigidBody2D, piece):
 
 	print("Created collision polygon with %d vertices for piece %d" % [local_boundary.size(), piece.id])
 
-# --- NEW helper: store correct rotation on tile without crashing if the var doesn't exist ---
 func _set_tile_correct_rotation(tile: Node, rot: float) -> void:
-	# If your Tile script defines `correct_rotation`, this will set it.
-	# If not, we just ignore it safely.
 	if tile == null:
 		return
-	# Godot 4: safest is to try set() and ignore errors by checking in a few ways.
 	if tile.has_method("set_correct_rotation"):
 		tile.call("set_correct_rotation", rot)
 		return
-	# If it's a plain variable on the tile script:
-	# `set()` works for script properties that exist.
 	if tile.has_method("set"):
-		# This will work if the property exists; if not, it won't crash the game,
-		# but may warn in the editor; acceptable for best-effort.
 		tile.set("correct_rotation", rot)
+
+func get_random_unplaced_tile() -> RigidBody2D:
+	# Losowy tile, który nie jest snapped / frozen / wyłączony kolizją
+	var candidates: Array[RigidBody2D] = []
+	for t in tiles:
+		var tile: RigidBody2D = t
+		if tile == null:
+			continue
+		if tile.freeze:
+			continue
+		if tile.collision_layer == 0:
+			continue
+		# tile.gd ma is_snapped -> filtrujemy
+		if tile.has_method("get") and tile.get("is_snapped") == true:
+			continue
+		candidates.append(tile)
+
+	if candidates.is_empty():
+		return null
+
+	return candidates[randi() % candidates.size()]
