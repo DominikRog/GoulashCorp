@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://bgneff5q81fuk"]
+
+[ext_resource type="Script" uid="uid://c7ut4id54qpe7" path="res://Scripts/puzzle_manager.gd" id="1_puzzle"]
+[ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
+size = Vector2(20, 720)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ih7j2"]
+size = Vector2(20, 1320)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_euhyg"]
+size = Vector2(20, 1320)
+
+[node name="PuzzleGame" type="Node2D" unique_id=1909076384]
+script = ExtResource("1_puzzle")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1727455824]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="PlayArea" type="ColorRect" parent="." unique_id=1348157393]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.2, 0.22, 0.28, 1)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=675360286]
+position = Vector2(640, 360)
+
+[node name="Player" parent="." unique_id=79805838 instance=ExtResource("2_player")]
+position = Vector2(640, 360)
+
+[node name="ShapeDisplay" type="Node2D" parent="." unique_id=735189848]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1707576048]
+
+[node name="TimerLabel" type="Label" parent="UI" unique_id=1544641998]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "00:45"
+
+[node name="ActLabel" type="Label" parent="UI" unique_id=2007888275]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 24
+text = "Act 1"
+horizontal_alignment = 2
+
+[node name="Walls" type="StaticBody2D" parent="." unique_id=901900047]
+collision_layer = 4
+collision_mask = 3
+
+[node name="LeftWall" type="CollisionShape2D" parent="Walls" unique_id=1818404958]
+position = Vector2(-10, 360)
+shape = SubResource("RectangleShape2D_walls")
+
+[node name="RightWall" type="CollisionShape2D" parent="Walls" unique_id=1863646246]
+position = Vector2(1290, 360)
+shape = SubResource("RectangleShape2D_walls")
+
+[node name="TopWall" type="CollisionShape2D" parent="Walls" unique_id=1282043946]
+position = Vector2(640, -10)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_ih7j2")
+
+[node name="BottomWall" type="CollisionShape2D" parent="Walls" unique_id=500200234]
+position = Vector2(640, 730)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_euhyg")
+
+[connection signal="all_shapes_completed" from="." to="." method="_on_all_shapes_completed"]
+[connection signal="timer_expired" from="." to="." method="_on_timer_expired"]
