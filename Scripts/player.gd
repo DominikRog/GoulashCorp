@@ -6,16 +6,20 @@ extends CharacterBody2D
 @export var push_force := 100.0
 
 # --- pulling / grabbing ---
-@export var pull_strength: float = 3000.0      # jak mocno "ciągnie" tile
-@export var hold_distance: float = 17.0        # gdzie ma być tile względem gracza (w pikselach)
-@export var max_grab_distance: float = 40.0    # jak daleko może być tile od gracza zanim puścimy
-@export var grab_damp_boost: float = 8.0       # dodatkowy damp podczas trzymania
-@export var block_pushing_while_grabbing: bool = false  # <-- CHANGED DEFAULT
+@export var pull_strength: float = 3000.0
+@export var hold_distance: float = 17.0
+@export var max_grab_distance: float = 40.0
+@export var grab_damp_boost: float = 8.0
+@export var block_pushing_while_grabbing: bool = false
 # ------------------------------
 
 # --- stability while grabbing ---
-@export var pull_deadzone: float = 2.0         # martwa strefa (mniej drżenia)
-@export var max_pull_speed: float = 120.0      # limit prędkości tile podczas ciągnięcia
+@export var pull_deadzone: float = 2.0
+@export var max_pull_speed: float = 120.0
+# ------------------------------
+
+# --- NEW: entrance smoothness ---
+@export var entrance_stop_distance: float = 0.5 # im mniejsze, tym mniej "snapu"
 # ------------------------------
 
 var can_move: bool = true
@@ -42,18 +46,22 @@ func _ready() -> void:
 func _physics_process(delta):
 	# Handle entrance animation
 	if is_entering:
-		var direction: Vector2 = (entrance_target - global_position).normalized()
-		global_position += direction * animation_speed * delta
+		# Smooth movement without teleport: move_toward prevents overshoot
+		var step: float = animation_speed * delta
+		global_position = global_position.move_toward(entrance_target, step)
 
+		# Animate walk
 		animation_time += delta * 8.0
 		sprite.frame = int(animation_time) % 4
 
-		if global_position.distance_to(entrance_target) < 15.0:
+		# Finish only when we're basically at the target
+		if global_position.distance_to(entrance_target) <= entrance_stop_distance:
 			global_position = entrance_target
 			is_entering = false
 			can_move = true
 			velocity = Vector2.ZERO
 			sprite.frame = 0
+			animation_time = 0.0
 			entrance_completed.emit()
 		return
 
@@ -95,18 +103,14 @@ func _physics_process(delta):
 		_pull_tile(delta)
 
 	# --- Push tiles ---
-	# We want the player to keep pushing OTHER tiles while grabbing.
-	# Only skip pushing when block_pushing_while_grabbing is true.
 	if can_move:
 		if block_pushing_while_grabbing and grabbed_tile != null:
-			# explicitly skip pushing while grabbing (optional behavior toggle)
 			pass
 		else:
 			for i in range(get_slide_collision_count()):
 				var collision = get_slide_collision(i)
 				var collider = collision.get_collider()
 				if collider is RigidBody2D:
-					# Never push the grabbed tile (prevents jitter / fighting the pull)
 					if grabbed_tile != null and collider == grabbed_tile:
 						continue
 					var push_direction: Vector2 = collision.get_normal() * -1.0
@@ -124,8 +128,6 @@ func _try_grab_tile():
 		var rb: RigidBody2D = b as RigidBody2D
 		if rb == null:
 			continue
-
-		# Ignore snapped/disabled tiles
 		if rb.freeze:
 			continue
 		if rb.collision_layer == 0:
@@ -141,7 +143,6 @@ func _try_grab_tile():
 
 	grabbed_tile = best
 
-	# Keep tile on the same side it was grabbed from (intuitive)
 	var v: Vector2 = grabbed_tile.global_position - global_position
 	if v.length() < 0.001:
 		grab_dir = Vector2.DOWN
@@ -151,10 +152,8 @@ func _try_grab_tile():
 	else:
 		grab_dir = v.normalized()
 
-	# Prevent grabbed tile from colliding with player
 	grabbed_tile.add_collision_exception_with(self)
 
-	# Boost damping while grabbing
 	if grab_damp_boost > 0.0:
 		_grabbed_original_linear_damp = grabbed_tile.linear_damp
 		_grabbed_original_angular_damp = grabbed_tile.angular_damp
@@ -211,6 +210,10 @@ func start_entrance(from_pos: Vector2, to_pos: Vector2):
 	is_entering = true
 	can_move = false
 	visible = true
+
+	# Reset anim time so first frame doesn't "jump"
+	animation_time = 0.0
+	sprite.frame = 0
 
 	if grabbed_tile != null:
 		_release_tile()
