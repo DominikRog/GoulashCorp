@@ -102,19 +102,26 @@ func _physics_process(delta):
 	if grabbed_tile != null:
 		_pull_tile(delta)
 
-	# --- Push tiles ---
-	if can_move:
-		if block_pushing_while_grabbing and grabbed_tile != null:
-			pass
-		else:
+	# --- Push tiles (only when moving) ---
+	if can_move and velocity.length() > 0.1:  # Only push when moving
+		if (not block_pushing_while_grabbing) or grabbed_tile == null:
 			for i in range(get_slide_collision_count()):
 				var collision = get_slide_collision(i)
 				var collider = collision.get_collider()
 				if collider is RigidBody2D:
 					if grabbed_tile != null and collider == grabbed_tile:
 						continue
-					var push_direction: Vector2 = collision.get_normal() * -1.0
-					collider.apply_central_impulse(push_direction * push_force)
+
+					# Use player's movement direction for consistent pushing
+					var push_direction: Vector2 = velocity.normalized()
+
+					# Set tile velocity directly for smooth pushing (not impulse)
+					var push_velocity = push_direction * push_force
+					collider.linear_velocity = collider.linear_velocity.lerp(push_velocity, 0.3)
+
+					# Add very slight rotation based on push angle for subtle tumbling
+					var cross = push_direction.x * (collider.global_position.y - global_position.y) - push_direction.y * (collider.global_position.x - global_position.x)
+					collider.angular_velocity += cross * 0.02  # Much smaller for subtle effect
 
 func _try_grab_tile():
 	if grab_area == null:

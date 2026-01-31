@@ -29,12 +29,12 @@ func _ready():
 	mass = 2.0
 	gravity_scale = 0.0  # Top-down, no gravity
 	linear_damp = 3.0  # Slow down naturally
-	angular_damp = 5.0  # Prevent spinning
-	lock_rotation = true  # Prevent tiles from rotating
+	angular_damp = 8.0  # Higher damping to prevent crazy spinning
+	lock_rotation = false  # Allow natural rotation
 
-	# Add bounce for wall/tile collisions
-	var physics_mat: PhysicsMaterial = PhysicsMaterial.new()
-	physics_mat.bounce = 0.5
+	# Add some bounce for walls, but not too much
+	var physics_mat = PhysicsMaterial.new()
+	physics_mat.bounce = 0.3  # Moderate bounce off walls
 	physics_material_override = physics_mat
 
 func _physics_process(_delta):
@@ -68,10 +68,12 @@ func _start_smooth_snap():
 	_snap_tween.set_trans(Tween.TRANS_SINE)
 	_snap_tween.set_ease(Tween.EASE_OUT)
 	_snap_tween.tween_property(self, "global_position", correct_position, snap_duration)
+	_snap_tween.parallel().tween_property(self, "rotation", 0.0, snap_duration)  # Also reset rotation
 
 	_snap_tween.finished.connect(func() -> void:
 		# Ensure exact final alignment
 		global_position = correct_position
+		rotation = 0.0  # Reset rotation to align properly
 
 		is_snapped = true
 		_is_snapping = false
@@ -103,8 +105,9 @@ func scatter_to(target_pos: Vector2):
 	direction = direction.rotated(randf_range(-0.6, 0.6))
 	var speed: float = randf_range(1000.0, 1300.0)
 	linear_velocity = direction * speed
-	# Add slight random angular velocity for natural movement (but rotation is locked)
-	angular_velocity = 0.0  # Keep at 0 since rotation is locked
+
+	# Add gentle random angular velocity for natural tumbling (not crazy spinning)
+	angular_velocity = randf_range(-2.0, 2.0)
 
 	# Enable snapping after a delay (when tile has moved away from correct position)
 	await get_tree().create_timer(0.5).timeout
