@@ -4,16 +4,16 @@
 [ext_resource type="Texture2D" uid="uid://cobartcy7rm2q" path="res://Assets/Main_Dude.png" id="2_6t5aa"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_onrkg"]
-size = Vector2(16, 16)
+size = Vector2(15, 17)
 
 [node name="Player" type="CharacterBody2D" unique_id=1381824858]
 collision_mask = 6
 script = ExtResource("1_cvnsp")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1812851318]
+position = Vector2(-0.5, -0.5)
 shape = SubResource("RectangleShape2D_onrkg")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1970581514]
 texture = ExtResource("2_6t5aa")
 hframes = 4
-frame = 0

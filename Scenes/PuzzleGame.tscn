@@ -1,7 +1,17 @@
 [gd_scene format=3 uid="uid://bgneff5q81fuk"]
 
 [ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
+[ext_resource type="Texture2D" uid="uid://b0b3v6joo17u8" path="res://Assets/Placeholder_Tiles.png" id="2_euhyg"]
 [ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vxw10"]
+texture = ExtResource("2_euhyg")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_58pa3"]
+sources/1 = SubResource("TileSetAtlasSource_vxw10")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_walls"]
 size = Vector2(20, 720)
@@ -14,17 +24,21 @@ size = Vector2(20, 1320)
 
 [node name="PuzzleGame" type="Node2D" unique_id=1909076384]
 script = ExtResource("1_ih7j2")
-play_area_size = Vector2(320, 180)
+play_area_size = Vector2(320, 176)
 
 [node name="Background" type="ColorRect" parent="." unique_id=1727455824]
 offset_right = 320.0
 offset_bottom = 180.0
-color = Color(0.15, 0.15, 0.2, 1)
+color = Color(0, 0, 0, 1)
 
 [node name="PlayArea" type="ColorRect" parent="." unique_id=1348157393]
 offset_right = 320.0
 offset_bottom = 180.0
-color = Color(0.2, 0.22, 0.28, 1)
+color = Color(0, 0, 0, 1)
+
+[node name="TileMap" type="TileMap" parent="." unique_id=973133123]
+tile_set = SubResource("TileSet_58pa3")
+format = 2
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=675360286]
 anchor_mode = 0
