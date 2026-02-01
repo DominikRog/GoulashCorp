@@ -15,11 +15,14 @@ extends Node2D
 @onready var king_sprite: Sprite2D = $King
 @onready var dialogue_label: Label = $UI/DialogueLabel
 @onready var end_screen: ColorRect = $UI/EndScreen
+@onready var flash_overlay: ColorRect = $UI/FlashOverlay
 
 var play_area_size: Vector2 = Vector2(320, 176)
 var is_typing: bool = false
 var current_text: String = ""
 var current_char_index: float = 0.0
+var camera_original_position: Vector2
+var is_shaking: bool = false
 
 func _ready():
 	# Hide UI elements initially
@@ -27,6 +30,8 @@ func _ready():
 	dialogue_label.modulate.a = 0.0
 	end_screen.visible = false
 	end_screen.modulate.a = 0.0
+	flash_overlay.visible = false
+	flash_overlay.modulate.a = 0.0
 
 	# Position king at center
 	var center = play_area_size / 2.0
@@ -41,6 +46,7 @@ func _ready():
 	# Camera starts at center with normal zoom
 	camera.global_position = center
 	camera.zoom = Vector2(1.0, 1.0)
+	camera_original_position = camera.global_position
 
 	# Wait a frame for scene setup
 	await get_tree().process_frame
@@ -65,6 +71,39 @@ func _process(delta: float):
 			is_typing = false
 		else:
 			dialogue_label.text = current_text.substr(0, chars_to_show)
+
+func screen_shake(duration: float = 0.5, intensity: float = 20.0):
+	"""Shake the camera violently"""
+	is_shaking = true
+	var elapsed = 0.0
+
+	while elapsed < duration:
+		# Random offset from original position
+		var offset = Vector2(
+			randf_range(-intensity, intensity),
+			randf_range(-intensity, intensity)
+		)
+		camera.global_position = camera_original_position + offset
+
+		await get_tree().create_timer(0.016).timeout  # ~60fps
+		elapsed += 0.016
+
+	# Return to original position
+	camera.global_position = camera_original_position
+	is_shaking = false
+
+func flash_screen(color: Color = Color(1, 0, 0, 1), duration: float = 0.3):
+	"""Flash the screen with a color"""
+	flash_overlay.color = color
+	flash_overlay.visible = true
+	flash_overlay.modulate.a = 1.0
+
+	# Fade out
+	var tween = create_tween()
+	tween.tween_property(flash_overlay, "modulate:a", 0.0, duration)
+	await tween.finished
+
+	flash_overlay.visible = false
 
 func _load_king_sprite():
 	"""Load the king character sprite"""
@@ -258,6 +297,12 @@ func explode_king():
 
 	# Small delay before explosion
 	await get_tree().create_timer(0.2).timeout
+
+	# EXPLOSION EFFECTS!
+	# Flash screen red
+	flash_screen(Color(1, 0, 0, 1), 0.4)
+	# Shake camera violently
+	screen_shake(0.6, 25.0)
 
 	# Apply random forces to scatter tiles
 	for tile in tiles:

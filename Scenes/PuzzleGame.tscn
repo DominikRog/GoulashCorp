@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://b13yp3a10pp1k" path="res://Scripts/puzzle_manager_new.gd" id="1_ih7j2"]
 [ext_resource type="Texture2D" uid="uid://fgfijset0ft3" path="res://Old Assets/Tiles_Set.png" id="2_euhyg"]
-[ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://c1fo2g8yx01c0" path="res://Scenes/Player.tscn" id="2_player"]
 [ext_resource type="PackedScene" uid="uid://bff8vbws47nyt" path="res://Scenes/goblin.tscn" id="4_vxw10"]
-[ext_resource type="AudioStream" uid="uid://cjpvoyiwb0rs3" path="res://Audio/LevelComplete.mp3" id="5_58pa3"]
-[ext_resource type="Script" uid="uid://bdee3qjh6xrgi" path="res://Scripts/anomaly_manager.gd" id="5_hpsbn"]
+[ext_resource type="AudioStream" uid="uid://byh4ad4e4ljxw" path="res://Audio/SuccesLevelEffect.mp3" id="5_58pa3"]
+[ext_resource type="Script" path="res://Scripts/anomaly_manager.gd" id="5_hpsbn"]
 [ext_resource type="Texture2D" uid="uid://d233meitvbf5j" path="res://Assets/Anomalies/speed.png" id="6_u0au7"]
 [ext_resource type="Texture2D" uid="uid://beq3l46cri04j" path="res://Assets/Anomalies/weak.png" id="7_p2qx1"]
 [ext_resource type="Texture2D" uid="uid://do6nro5gr38pm" path="res://Assets/Anomalies/repulsion.png" id="8_gyhh0"]
