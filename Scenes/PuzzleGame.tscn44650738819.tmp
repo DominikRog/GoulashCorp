@@ -6,9 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://bff8vbws47nyt" path="res://Scenes/goblin.tscn" id="4_vxw10"]
 [ext_resource type="AudioStream" uid="uid://cjpvoyiwb0rs3" path="res://Audio/LevelComplete.mp3" id="5_58pa3"]
 [ext_resource type="Script" uid="uid://bdee3qjh6xrgi" path="res://Scripts/anomaly_manager.gd" id="5_hpsbn"]
-[ext_resource type="Texture2D" uid="uid://d233meitvbf5j" path="res://Assets/Anomalies/speed.png" id="6_u0au7"]
-[ext_resource type="Texture2D" uid="uid://beq3l46cri04j" path="res://Assets/Anomalies/weak.png" id="7_p2qx1"]
-[ext_resource type="Texture2D" uid="uid://do6nro5gr38pm" path="res://Assets/Anomalies/repulsion.png" id="8_gyhh0"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vxw10"]
 texture = ExtResource("2_euhyg")
@@ -75,9 +72,6 @@ position = Vector2(160, 90)
 
 [node name="AnomalyManager" type="Node2D" parent="." unique_id=1582496457]
 script = ExtResource("5_hpsbn")
-icon_speed = ExtResource("6_u0au7")
-icon_weak = ExtResource("7_p2qx1")
-icon_repulsion = ExtResource("8_gyhh0")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1707576048]
 
@@ -104,10 +98,11 @@ text = "Act 1"
 horizontal_alignment = 2
 
 [node name="AnomalyIcon" type="TextureRect" parent="UI" unique_id=371543874]
-offset_left = 608.0
-offset_top = 84.0
-offset_right = 672.0
-offset_bottom = 148.0
+visible = false
+offset_left = 150.0
+offset_top = 16.0
+offset_right = 166.0
+offset_bottom = 32.0
 stretch_mode = 5
 
 [node name="Walls" type="StaticBody2D" parent="." unique_id=901900047]
@@ -135,7 +130,6 @@ shape = SubResource("RectangleShape2D_euhyg")
 
 [node name="LevelSucces" type="AudioStreamPlayer2D" parent="." unique_id=1202948004]
 stream = ExtResource("5_58pa3")
-volume_db = -5.821
 
 [connection signal="all_shapes_completed" from="." to="." method="_on_all_shapes_completed"]
 [connection signal="timer_expired" from="." to="." method="_on_timer_expired"]

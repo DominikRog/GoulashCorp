@@ -26,16 +26,6 @@ texture = ExtResource("2_c88ot")
 [sub_resource type="TileSet" id="TileSet_1ws0g"]
 sources/0 = SubResource("TileSetAtlasSource_2mdl5")
 
-[sub_resource type="Gradient" id="Gradient_2842h"]
-interpolation_mode = 2
-offsets = PackedFloat32Array(0.5625, 1)
-colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_1ws0g"]
-gradient = SubResource("Gradient_2842h")
-fill = 1
-fill_from = Vector2(0.5014245, 0.4871795)
-
 [sub_resource type="Shader" id="Shader_pixelate"]
 code = "shader_type canvas_item;
 
@@ -76,6 +66,40 @@ shader_parameter/color_steps = 24
 shader_parameter/breathe_speed = 0.8
 shader_parameter/breathe_intensity = 0.15
 
+[sub_resource type="Gradient" id="Gradient_2842h"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.5625, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1ws0g"]
+gradient = SubResource("Gradient_2842h")
+fill = 1
+fill_from = Vector2(0.5014245, 0.4871795)
+
+[sub_resource type="GDScript" id="GDScript_1ws0g"]
+script/source = "extends TextureRect
+
+
+@export var radius := 2.0        # promień kółka (px)
+@export var speed := 3         # prędkość obrotu
+
+var time := 0.0
+var start_pos: Vector2
+
+func _ready():
+	start_pos = position
+
+func _process(delta):
+	time += delta * speed
+	
+	var offset = Vector2(
+		cos(time),
+		sin(time)
+	) * radius
+	
+	position = start_pos + offset
+"
+
 [node name="CollectionRoom" type="Node2D" unique_id=1700664661]
 script = ExtResource("1")
 
@@ -115,12 +139,13 @@ expand_mode = 1
 [node name="Back#DemonFace" type="TextureRect" parent="Control" unique_id=1733157480]
 modulate = Color(1, 0, 0.08235294, 0.78431374)
 layout_mode = 0
-offset_left = 122.0
-offset_top = 4.0
-offset_right = 378.0
-offset_bottom = 260.0
-scale = Vector2(0.25, 0.25)
+offset_left = 69.00001
+offset_top = -6.9999995
+offset_right = 325.0
+offset_bottom = 249.0
+scale = Vector2(0.4, 0.4)
 texture = ExtResource("4_2mdl5")
+script = SubResource("GDScript_1ws0g")
 
 [node name="SnapSound" type="AudioStreamPlayer2D" parent="." unique_id=1460966022]
 stream = ExtResource("3")
@@ -138,19 +163,21 @@ grow_vertical = 2
 
 [node name="QuestionText" type="Label" parent="Popup" unique_id=1247340932]
 layout_mode = 0
-offset_left = -625.0
-offset_top = -314.0
-offset_right = -170.00006
-offset_bottom = -194.00002
+offset_left = -612.0
+offset_top = -268.0
+offset_right = -147.0
+offset_bottom = -148.00002
 scale = Vector2(0.4, 0.4)
 theme_override_font_sizes/font_size = 12
-text = "Placeholder"
+text = "Who sells what they never make, and buys what they never truly need?"
+horizontal_alignment = 1
 
-[node name="ChoicesContainer" type="VBoxContainer" parent="Popup" unique_id=1234939185]
+[node name="ChoicesContainer" type="HBoxContainer" parent="Popup" unique_id=449039845]
 layout_mode = 0
-offset_left = -635.0
-offset_top = -281.0
-offset_right = 519.9999
-offset_bottom = -257.66666
+offset_left = -634.0
+offset_top = -251.0
+offset_right = 520.9999
+offset_bottom = -227.66666
 scale = Vector2(0.2, 0.2)
 theme_override_constants/separation = 6
+alignment = 1

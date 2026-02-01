@@ -20,9 +20,10 @@ var typewriter_speed: float = 0.07  # Seconds per character (higher = slower)
 var is_typing: bool = false
 var text_fully_displayed: bool = false
 var waiting_for_input: bool = false
+var fading = false
 
 @onready var dialogue_text: Label = $DialogueText
-@onready var choices_container: VBoxContainer = $ChoicesContainer
+@onready var choices_container: HBoxContainer = $ChoicesContainer
 
 signal dialogue_completed
 signal answer_selected(correct: bool)
@@ -60,6 +61,7 @@ func _input(event: InputEvent) -> void:
 			# Show choices (keep text visible)
 			waiting_for_input = false
 			text_fully_displayed = false
+			fade_out_dialogue()
 			choices_container.visible = true
 			# Focus first button
 			if choices_container.get_child_count() > 0:
@@ -81,6 +83,20 @@ func _input(event: InputEvent) -> void:
 						button.emit_signal("pressed")
 					get_viewport().set_input_as_handled()
 
+func fade_out_dialogue():
+	fading = true
+	var tween = create_tween()
+	tween.tween_property(
+		dialogue_text,
+		"modulate:a",
+		0.0,
+		0.5 # czas fade out (sekundy)
+	)
+	tween.finished.connect(on_fade_finished)
+
+func on_fade_finished():
+	dialogue_text.visible = false
+	fading = false
 func show_opening_dialogue():
 	"""Display the opening 'Get to the king' dialogue"""
 	current_type = DialogueType.OPENING
@@ -168,7 +184,7 @@ func add_choice_button(text: String, is_correct: bool):
 	"""Add a choice button"""
 	var button = Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(400, 50)
+	button.custom_minimum_size = Vector2(300, 50)
 
 	# Style the button
 	button.theme_type_variation = "Button"

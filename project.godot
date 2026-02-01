@@ -24,11 +24,13 @@ buses/default_bus_layout="uid://dmq47w7bt0psc"
 GameManager="*res://Scripts/game_manager.gd"
 ShapeData="*res://Scripts/shape_data.gd"
 MusicManager="*res://Scenes/MusicManager.tscn"
+BlackoutManager="*res://Scripts/blackout_manager.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 
 [gui]

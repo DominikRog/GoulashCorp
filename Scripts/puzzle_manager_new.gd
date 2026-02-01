@@ -20,6 +20,7 @@ var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 @export var tile_bounce: float = 10.0
 @export var disable_collision_when_snapped: bool = true
 @export var freeze_tile_when_snapped: bool = true
+@export var blackout_fade_duration: float = 0.15  # Duration of fade from black at scene start
 # --------------------------------------------------------------------
 
 # --- wall "magnetic" repulsion for tiles ---
@@ -45,6 +46,7 @@ var timer_active: bool = false
 #@onready var level_music: AudioStreamPlayer = $AudioStreamPlayer
 
 @onready var goblin: CharacterBody2D = $Goblin
+@onready var anomaly_manager: AnomalyManager = $AnomalyManager
 
 signal all_shapes_completed
 signal timer_expired
@@ -73,13 +75,17 @@ func _ready():
 	if goblin:
 		goblin.set("puzzle_manager", self)
 
+	# --- ANOMALIES: bind manager to player & puzzle manager ---
+	if anomaly_manager:
+		anomaly_manager.bind(player, self)
+	# ----------------------------------------------------------
+
 	# Get current act data
 	var act_data = GameManager.get_current_act_data()
 	if act_data.is_empty():
 		push_error("No act data found!")
 		return
 	update_label_display()
-		
 
 	var shapes_data = act_data.get("shapes", [])
 	current_shapes.assign(shapes_data)
@@ -96,6 +102,13 @@ func _ready():
 
 		# Set player sprite based on current character
 		_update_player_sprite()
+
+	# Wait a frame to ensure everything is positioned
+	await get_tree().process_frame
+
+	# Now fade from black using persistent BlackoutManager (everything is set up)
+	await get_tree().create_timer(0.1).timeout
+	await BlackoutManager.fade_from_black(blackout_fade_duration)
 
 	# Start with first shape
 	start_next_shape()
@@ -116,8 +129,16 @@ func _physics_process(delta: float) -> void:
 
 func start_next_shape():
 	"""Begin the next shape puzzle"""
+	# Reset goblin per-shape (Twoje zachowanie)
 	if goblin and goblin.has_method("reset_goblin"):
-		goblin.reset_goblin(goblin.spawn_delay_first) 
+		goblin.reset_goblin(goblin.spawn_delay_first)
+
+	# --- ANOMALIES: zawsze wyczyść poprzednią na start nowego shape'a ---
+	# (bo kolejny shape to w praktyce kolejny "level" u Ciebie)
+	if anomaly_manager:
+		anomaly_manager.reset()
+	# -------------------------------------------------------------------
+
 	if current_shape_index >= current_shapes.size():
 		all_shapes_completed.emit()
 		return
@@ -134,6 +155,10 @@ func start_next_shape():
 
 func _on_player_entrance_completed():
 	timer_active = true
+	# --- ANOMALIES: losuj anomalię teraz, odpali się sama po 5 sekundach (init_delay w managerze) ---
+	if anomaly_manager:
+		anomaly_manager.start_for_level()
+	# ---------------------------------------------------------------------------------------------
 
 func show_shape_preview(shape_name: String):
 	"""Display the complete shape for 1 second"""
@@ -425,6 +450,15 @@ func _on_tile_snapped(index: int):
 		complete_current_shape()
 
 func complete_current_shape():
+	# --- ANOMALIES: zakończ anomalię przy ukończeniu shape'a ---
+	if anomaly_manager:
+		anomaly_manager.reset()
+	# -----------------------------------------------------------
+
+	# goblin też powinien się resetować po przejściu (żeby nie przenosił stanu)
+	if goblin and goblin.has_method("reset_goblin"):
+		goblin.reset_goblin(goblin.spawn_delay_first)
+
 	var shape_name = current_shapes[current_shape_index]
 
 	if player:
@@ -458,10 +492,15 @@ func _input(event):
 		restart_puzzle()
 
 func restart_puzzle():
+	# --- ANOMALIES: reset przy resecie poziomu ---
+	if anomaly_manager:
+		anomaly_manager.reset()
+	# --------------------------------------------
+
 	if player:
 		player.visible = false
 		player.can_move = false
-		
+
 	if goblin:
 		goblin.reset_goblin(5.0)
 
@@ -497,6 +536,10 @@ func update_timer_display():
 			timer_label.modulate = Color(1, 1, 1)
 
 func _on_all_shapes_completed():
+	# --- ANOMALIES: bezpiecznik przed zmianą sceny ---
+	if anomaly_manager:
+		anomaly_manager.reset()
+	# -------------------------------------------------
 	get_tree().change_scene_to_file("res://Scenes/CollectionRoom.tscn")
 
 func _on_timer_expired():
@@ -548,22 +591,16 @@ func _update_player_sprite():
 	if not player:
 		return
 
-	var sprite = player.get_node_or_null("Sprite2D")
-	if not sprite:
-		return
-
 	# Get current character from GameManager
 	var character_name = GameManager.current_character
 	if character_name.is_empty():
 		character_name = "demon"  # Default fallback
 
-	# Try to load character sprite
-	var sprite_path = "res://Assets/" + character_name + "_full.png"
-	if ResourceLoader.exists(sprite_path):
-		sprite.texture = load(sprite_path)
+	# Call player's set_character method to load both idle and run sprites
+	if player.has_method("set_character"):
+		player.set_character(character_name)
 	else:
-		# Fallback: keep current sprite
-		print("Character sprite not found: " + sprite_path)
+		push_warning("Player missing set_character method")
 
 func _apply_wall_repulsion(delta: float) -> void:
 	var rng: float = wall_repulsion_range

@@ -2,16 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cr2rekdfi5pfv" path="res://Scripts/dialogue_manager.gd" id="1_dialogue"]
 [ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="2_2842h"]
-
-[sub_resource type="Gradient" id="Gradient_2842h"]
-interpolation_mode = 2
-offsets = PackedFloat32Array(0.5625, 1)
-colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_cq6to"]
-gradient = SubResource("Gradient_2842h")
-fill = 1
-fill_from = Vector2(0.5014245, 0.4871795)
+[ext_resource type="Script" uid="uid://i33g2qwqsj8w" path="res://Scenes/demon_face.gd" id="3_cq6to"]
 
 [sub_resource type="Shader" id="Shader_pixelate"]
 code = "shader_type canvas_item;
@@ -53,6 +44,16 @@ shader_parameter/color_steps = 24
 shader_parameter/breathe_speed = 0.8
 shader_parameter/breathe_intensity = 0.15
 
+[sub_resource type="Gradient" id="Gradient_2842h"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.5625, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_cq6to"]
+gradient = SubResource("Gradient_2842h")
+fill = 1
+fill_from = Vector2(0.5014245, 0.4871795)
+
 [node name="Dialogue" type="Control" unique_id=232306232]
 layout_mode = 3
 anchors_preset = 15
@@ -77,25 +78,26 @@ offset_right = 627.0
 offset_bottom = 285.0
 scale = Vector2(2, 2)
 texture = ExtResource("2_2842h")
+script = ExtResource("3_cq6to")
 
 [node name="DialogueText" type="Label" parent="." unique_id=813220841]
 layout_mode = 0
-offset_left = 113.0
-offset_top = 181.0
-offset_right = 1037.0
-offset_bottom = 571.0
+offset_left = 526.0
+offset_top = 363.0
+offset_right = 881.0
+offset_bottom = 753.0
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 24
-text = "Dialogue text goes here..."
+text = "\"Get to the king\""
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="ChoicesContainer" type="VBoxContainer" parent="." unique_id=759964842]
+[node name="ChoicesContainer" type="HBoxContainer" parent="." unique_id=740405416]
 layout_mode = 0
-offset_left = 170.0
-offset_top = 601.0
-offset_right = 1094.0
-offset_bottom = 601.0
+offset_left = 172.0
+offset_top = 583.0
+offset_right = 1096.0
+offset_bottom = 583.0
 size_flags_vertical = 4
 theme_override_constants/separation = 15
 alignment = 1

@@ -71,7 +71,7 @@ var acts = {
 	6: {
 		"character": "queen",
 		"next_character": "king",
-		"shapes": ["Clue_Queen_1", "Clue_Queen_2"],  # Using Queen clues for now until King shapes exist
+		"shapes": ["Clue_King", "Clue_King_2"],  # Using Queen clues for now until King shapes exist
 		"question": "Who, with a single decision, can alter hundreds more?",
 		"answers": [
 			{"text": "King", "correct": true},
