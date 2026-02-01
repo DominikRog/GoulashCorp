@@ -12,5 +12,5 @@ stream = ExtResource("2_4y3dx")
 
 [node name="LevelPlayer" type="AudioStreamPlayer" parent="." unique_id=545191506]
 stream = ExtResource("3_4y3dx")
-volume_db = -14.523
+volume_db = -20.344
 autoplay = true

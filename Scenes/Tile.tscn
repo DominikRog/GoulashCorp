@@ -1,7 +1,11 @@
 [gd_scene format=3 uid="uid://c8bvlay6wn3l5"]
 
 [ext_resource type="Script" uid="uid://q0eka1fi4fvo" path="res://Scripts/tile.gd" id="1_tile"]
-[ext_resource type="AudioStream" uid="uid://cjewwhk4dbecn" path="res://Audio/SUCCES.mp3" id="2_iof5j"]
+[ext_resource type="AudioStream" uid="uid://d2yyriu4ekohi" path="res://Audio/Soundeffecr_C_note.mp3" id="2_iof5j"]
+[ext_resource type="AudioStream" uid="uid://bw5m1suvfufyl" path="res://Audio/SoundEffect_D_note.mp3" id="3_bk6am"]
+[ext_resource type="AudioStream" uid="uid://b44vd8eyeuk2d" path="res://Audio/Dzwięk1.mp3" id="4_bk6am"]
+[ext_resource type="AudioStream" uid="uid://chwcsr7vhc8xy" path="res://Audio/Dzwiek2.mp3" id="5_jvlbh"]
+[ext_resource type="AudioStream" uid="uid://bkoymnqls6a37" path="res://Audio/dzwiek3.mp3" id="6_6r1mx"]
 
 [node name="Tile" type="RigidBody2D" unique_id=107737862]
 collision_layer = 2
@@ -14,7 +18,24 @@ script = ExtResource("1_tile")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1947523176]
 
-[node name="CorrectTile" type="AudioStreamPlayer2D" parent="." unique_id=574856212]
+[node name="CorrectTile1" type="AudioStreamPlayer2D" parent="." unique_id=574856212]
 stream = ExtResource("2_iof5j")
+volume_db = -15.91
+
+[node name="CorrectTile2" type="AudioStreamPlayer2D" parent="." unique_id=52581934]
+stream = ExtResource("3_bk6am")
+volume_db = -15.91
+
+[node name="CorrectTile3" type="AudioStreamPlayer2D" parent="." unique_id=1543508870]
+stream = ExtResource("4_bk6am")
+volume_db = -15.91
+
+[node name="CorrectTile4" type="AudioStreamPlayer2D" parent="." unique_id=1949665025]
+stream = ExtResource("5_jvlbh")
+volume_db = -15.91
+
+[node name="CorrectTile5" type="AudioStreamPlayer2D" parent="." unique_id=573781579]
+stream = ExtResource("6_6r1mx")
+volume_db = -15.91
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

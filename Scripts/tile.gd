@@ -29,7 +29,13 @@ func get_correct_rotation() -> float:
 # --- internal ---
 var _is_snapping: bool = false
 var _snap_tween: Tween = null
-@onready var snap_sound: AudioStreamPlayer2D = $CorrectTile
+@onready var snap_sounds: Array[AudioStreamPlayer2D] = [
+	$CorrectTile1,
+	$CorrectTile2,
+	$CorrectTile3,
+	$CorrectTile4,
+	$CorrectTile5
+]
 # ---------------------------
 
 signal tile_snapped(index: int)
@@ -67,6 +73,14 @@ func _physics_process(_delta):
 
 	# jeśli oba warunki spełnione -> płynnie dosnapuj
 	_start_smooth_snap()
+	
+func play_random_snap_sound():
+	if snap_sounds.is_empty():
+		return
+
+	var snap_sound: AudioStreamPlayer2D = snap_sounds.pick_random()
+	snap_sound.pitch_scale = randf_range(0.95, 1.05)
+	snap_sound.play()
 
 func _start_smooth_snap():
 	if is_snapped or _is_snapping:
@@ -83,9 +97,7 @@ func _start_smooth_snap():
 		_snap_tween.kill()
 		_snap_tween = null
 		
-	if snap_sound:
-		snap_sound.pitch_scale = randf_range(0.95, 1.05)
-		snap_sound.play()
+	play_random_snap_sound()
 
 	_snap_tween = create_tween()
 	_snap_tween.set_trans(Tween.TRANS_SINE)
