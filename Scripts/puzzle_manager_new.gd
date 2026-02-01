@@ -548,22 +548,16 @@ func _update_player_sprite():
 	if not player:
 		return
 
-	var sprite = player.get_node_or_null("Sprite2D")
-	if not sprite:
-		return
-
 	# Get current character from GameManager
 	var character_name = GameManager.current_character
 	if character_name.is_empty():
 		character_name = "demon"  # Default fallback
 
-	# Try to load character sprite
-	var sprite_path = "res://Assets/" + character_name + "_full.png"
-	if ResourceLoader.exists(sprite_path):
-		sprite.texture = load(sprite_path)
+	# Call player's set_character method to load both idle and run sprites
+	if player.has_method("set_character"):
+		player.set_character(character_name)
 	else:
-		# Fallback: keep current sprite
-		print("Character sprite not found: " + sprite_path)
+		push_warning("Player missing set_character method")
 
 func _apply_wall_repulsion(delta: float) -> void:
 	var rng: float = wall_repulsion_range
