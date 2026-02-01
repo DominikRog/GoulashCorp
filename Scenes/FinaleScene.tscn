@@ -6,10 +6,8 @@
 script = ExtResource("1_finale")
 
 [node name="Background" type="ColorRect" parent="." unique_id=25327701]
-offset_left = -1274.0
-offset_top = -745.0
-offset_right = 1944.0
-offset_bottom = 1374.0
+offset_right = 1280.0
+offset_bottom = 720.0
 color = Color(0, 0, 0, 1)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1935199053]

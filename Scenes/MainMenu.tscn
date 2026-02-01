@@ -30,22 +30,14 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=689897634]
 layout_mode = 2
-size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 20
-
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer" unique_id=74384491]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 64
-text = "Get To The King"
-horizontal_alignment = 1
 
 [node name="Quote" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1489536066]
 custom_minimum_size = Vector2(800, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 24
 text = "\"Six degrees of separation - The idea that any two people in the
 world can be connected to each other through a chain of no more than
 six social relationships.\""
@@ -60,4 +52,5 @@ layout_mode = 2
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Play"
+text = "PLAY"
+flat = true
