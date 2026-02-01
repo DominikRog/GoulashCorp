@@ -1,7 +1,7 @@
 extends Node
 
-@export var menu_db: float = -22.0
-@export var level_db: float = -22.0
+@export var menu_db: float = 10
+@export var level_db: float = 10
 @export var fade_time: float = 0.6
 
 @onready var menu_player: AudioStreamPlayer = $MenuPlayer
