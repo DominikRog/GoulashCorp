@@ -32,7 +32,7 @@ var waiting_for_input: bool = false
 @onready var control: Control = $Control
 @onready var popup: Control = $Popup
 @onready var question_label: Label = $Popup/QuestionText
-@onready var choices_container: VBoxContainer = $Popup/ChoicesContainer
+@onready var choices_container: HBoxContainer = $Popup/ChoicesContainer
 @onready var snap_sound: AudioStreamPlayer2D = $SnapSound
 
 
