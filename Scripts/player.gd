@@ -4,6 +4,7 @@ extends CharacterBody2D
 @export var speed := 110.0
 @export var animation_speed := 70.0
 @export var push_force := 55.0
+@export var idle_animation_speed := 4.0
 
 # --- pulling / grabbing ---
 @export var pull_strength: float = 3000.0
@@ -40,6 +41,11 @@ var animation_time: float = 0.0
 var is_entering: bool = false
 var entrance_target: Vector2 = Vector2.ZERO
 
+# --- sprite textures ---
+var idle_texture: Texture2D = null
+var run_texture: Texture2D = null
+var current_character: String = "demon"
+
 # --- state ---
 var grabbed_tile: RigidBody2D = null
 var last_move_dir: Vector2 = Vector2.DOWN
@@ -62,6 +68,49 @@ signal entrance_completed
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	# Load initial character sprites (demon)
+	set_character(current_character)
+
+
+func set_character(character_name: String) -> void:
+	"""Load idle and run textures for the specified character"""
+	current_character = character_name
+
+	# Map character names to their folder and sprite prefix
+	var character_data = {
+		"demon": {"folder": "Demon", "prefix": "Main_Dude"},
+		"farmer": {"folder": "Farmer", "prefix": "Farmer"},
+		"merchant": {"folder": "Merchant", "prefix": "Merchant"},
+		"guardsman": {"folder": "Guard", "prefix": "Guard"},
+		"jester": {"folder": "Jester", "prefix": "Jester"},
+		"queen": {"folder": "Queen", "prefix": "Queen"},
+		"king": {"folder": "King", "prefix": "King"}
+	}
+
+	var char_info = character_data.get(character_name, {"folder": "Demon", "prefix": "Main_Dude"})
+	var character_folder = char_info["folder"]
+	var sprite_prefix = char_info["prefix"]
+
+	# Load textures
+	var idle_path = "res://New Assets/Characters/" + character_folder + "/" + sprite_prefix + "_Idle.png"
+	var run_path = "res://New Assets/Characters/" + character_folder + "/" + sprite_prefix + "_Run.png"
+
+	if ResourceLoader.exists(idle_path):
+		idle_texture = load(idle_path)
+	else:
+		push_warning("Idle texture not found: " + idle_path)
+
+	if ResourceLoader.exists(run_path):
+		run_texture = load(run_path)
+	else:
+		push_warning("Run texture not found: " + run_path)
+		# Fallback to idle texture if run doesn't exist (e.g., King character)
+		if idle_texture != null:
+			run_texture = idle_texture
+
+	# Set initial texture to idle
+	if idle_texture != null:
+		sprite.texture = idle_texture
 
 
 func _physics_process(delta: float) -> void:
@@ -74,6 +123,10 @@ func _physics_process(delta: float) -> void:
 		var step: float = animation_speed * delta
 		global_position = global_position.move_toward(entrance_target, step)
 
+		# Use run animation during entrance
+		if sprite.texture != run_texture and run_texture != null:
+			sprite.texture = run_texture
+
 		animation_time += delta * 8.0
 		sprite.frame = int(animation_time) % 4
 
@@ -82,6 +135,9 @@ func _physics_process(delta: float) -> void:
 			is_entering = false
 			can_move = true
 			velocity = Vector2.ZERO
+			# Switch to idle when entrance completes
+			if idle_texture != null:
+				sprite.texture = idle_texture
 			sprite.frame = 0
 			animation_time = 0.0
 			entrance_completed.emit()
@@ -122,12 +178,19 @@ func _physics_process(delta: float) -> void:
 
 		velocity = input_vector * current_speed
 
+		# Update sprite based on movement
 		if velocity.length() > 0.0:
+			# Running animation
+			if sprite.texture != run_texture and run_texture != null:
+				sprite.texture = run_texture
 			animation_time += delta * 8.0
 			sprite.frame = int(animation_time) % 4
 		else:
-			sprite.frame = 0
-			animation_time = 0.0
+			# Idle animation
+			if sprite.texture != idle_texture and idle_texture != null:
+				sprite.texture = idle_texture
+			animation_time += delta * idle_animation_speed
+			sprite.frame = int(animation_time) % 4
 
 		move_and_slide()
 

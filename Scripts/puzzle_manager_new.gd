@@ -20,6 +20,7 @@ var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 @export var tile_bounce: float = 10.0
 @export var disable_collision_when_snapped: bool = true
 @export var freeze_tile_when_snapped: bool = true
+@export var blackout_fade_duration: float = 0.15  # Duration of fade from black at scene start
 # --------------------------------------------------------------------
 
 # --- wall "magnetic" repulsion for tiles ---
@@ -101,6 +102,13 @@ func _ready():
 
 		# Set player sprite based on current character
 		_update_player_sprite()
+
+	# Wait a frame to ensure everything is positioned
+	await get_tree().process_frame
+
+	# Now fade from black using persistent BlackoutManager (everything is set up)
+	await get_tree().create_timer(0.1).timeout
+	await BlackoutManager.fade_from_black(blackout_fade_duration)
 
 	# Start with first shape
 	start_next_shape()
@@ -583,22 +591,16 @@ func _update_player_sprite():
 	if not player:
 		return
 
-	var sprite = player.get_node_or_null("Sprite2D")
-	if not sprite:
-		return
-
 	# Get current character from GameManager
 	var character_name = GameManager.current_character
 	if character_name.is_empty():
 		character_name = "demon"  # Default fallback
 
-	# Try to load character sprite
-	var sprite_path = "res://Assets/" + character_name + "_full.png"
-	if ResourceLoader.exists(sprite_path):
-		sprite.texture = load(sprite_path)
+	# Call player's set_character method to load both idle and run sprites
+	if player.has_method("set_character"):
+		player.set_character(character_name)
 	else:
-		# Fallback: keep current sprite
-		print("Character sprite not found: " + sprite_path)
+		push_warning("Player missing set_character method")
 
 func _apply_wall_repulsion(delta: float) -> void:
 	var rng: float = wall_repulsion_range
