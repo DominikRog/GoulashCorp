@@ -76,6 +76,30 @@ gradient = SubResource("Gradient_2842h")
 fill = 1
 fill_from = Vector2(0.5014245, 0.4871795)
 
+[sub_resource type="GDScript" id="GDScript_1ws0g"]
+script/source = "extends TextureRect
+
+
+@export var radius := 2.0        # promień kółka (px)
+@export var speed := 3         # prędkość obrotu
+
+var time := 0.0
+var start_pos: Vector2
+
+func _ready():
+	start_pos = position
+
+func _process(delta):
+	time += delta * speed
+	
+	var offset = Vector2(
+		cos(time),
+		sin(time)
+	) * radius
+	
+	position = start_pos + offset
+"
+
 [node name="CollectionRoom" type="Node2D" unique_id=1700664661]
 script = ExtResource("1")
 
@@ -121,6 +145,7 @@ offset_right = 325.0
 offset_bottom = 249.0
 scale = Vector2(0.4, 0.4)
 texture = ExtResource("4_2mdl5")
+script = SubResource("GDScript_1ws0g")
 
 [node name="SnapSound" type="AudioStreamPlayer2D" parent="." unique_id=1460966022]
 stream = ExtResource("3")

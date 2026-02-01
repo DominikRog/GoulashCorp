@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cr2rekdfi5pfv" path="res://Scripts/dialogue_manager.gd" id="1_dialogue"]
 [ext_resource type="Texture2D" uid="uid://d351i1i2gjwil" path="res://Assets/Demon.png" id="2_2842h"]
+[ext_resource type="Script" uid="uid://i33g2qwqsj8w" path="res://Scenes/demon_face.gd" id="3_cq6to"]
 
 [sub_resource type="Shader" id="Shader_pixelate"]
 code = "shader_type canvas_item;
@@ -77,6 +78,7 @@ offset_right = 627.0
 offset_bottom = 285.0
 scale = Vector2(2, 2)
 texture = ExtResource("2_2842h")
+script = ExtResource("3_cq6to")
 
 [node name="DialogueText" type="Label" parent="." unique_id=813220841]
 layout_mode = 0
