@@ -2,6 +2,65 @@
 
 [ext_resource type="Script" uid="uid://cxtr6d5odg6f5" path="res://Scripts/main_menu.gd" id="1_k7xqe"]
 
+[sub_resource type="Shader" id="Shader_pixelate"]
+code = "shader_type canvas_item;
+
+uniform float pixelation_amount : hint_range(1.0, 100.0) = 8.0;
+uniform int color_steps : hint_range(2, 32) = 8;
+uniform float breathe_speed : hint_range(0.1, 5.0) = 1.0;
+uniform float breathe_intensity : hint_range(0.0, 0.5) = 0.1;
+
+void fragment() {
+    // Breathing effect - pulse from center
+    vec2 center = vec2(0.5, 0.5);
+    float pulse = sin(TIME * breathe_speed) * breathe_intensity;
+    float scale = 1.0 + pulse;
+
+    // Apply breathing scale
+    vec2 uv = UV;
+    uv = center + (uv - center) * scale;
+
+    // Pixelate
+    vec2 pixel_size = vec2(1.0) / (TEXTURE_PIXEL_SIZE * pixelation_amount);
+    uv = floor(uv * pixel_size) / pixel_size;
+
+    // Get color
+    vec4 color = texture(TEXTURE, uv);
+
+    // Posterize/quantize colors
+    float steps = float(color_steps);
+    color.rgb = floor(color.rgb * steps) / steps;
+
+    COLOR = color;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pixelate"]
+shader = SubResource("Shader_pixelate")
+shader_parameter/pixelation_amount = 1.0
+shader_parameter/color_steps = 24
+shader_parameter/breathe_speed = 0.8
+shader_parameter/breathe_intensity = 0.15
+
+[sub_resource type="Gradient" id="Gradient_menu"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.5625, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.33759347, 1.9853935e-06, 5.896017e-07, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_menu"]
+gradient = SubResource("Gradient_menu")
+fill = 1
+fill_from = Vector2(0.5014245, 0.4871795)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_normal"]
+bg_color = Color(0.12549, 0.14902, 0.192157, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+bg_color = Color(0.2, 0.2, 0.3, 0.3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_focus"]
+bg_color = Color(0.2, 0.2, 0.3, 0.3)
+
 [node name="MainMenu" type="Control" unique_id=1623044213]
 layout_mode = 3
 anchors_preset = 15
@@ -11,14 +70,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_k7xqe")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=855649927]
+[node name="Background" type="TextureRect" parent="." unique_id=855649927]
+material = SubResource("ShaderMaterial_pixelate")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.12549, 0.14902, 0.192157, 1)
+texture = SubResource("GradientTexture2D_menu")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1728303450]
 layout_mode = 1
@@ -49,8 +109,12 @@ custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
 [node name="PlayButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1713526812]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(160, 40)
 layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
 text = "PLAY"
-flat = true
