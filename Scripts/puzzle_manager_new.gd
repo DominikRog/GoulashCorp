@@ -20,6 +20,7 @@ var VoronoiCutter = preload("res://Scripts/voronoi_cutter.gd")
 @export var tile_bounce: float = 10.0
 @export var disable_collision_when_snapped: bool = true
 @export var freeze_tile_when_snapped: bool = true
+@export var blackout_fade_duration: float = 0.15  # Duration of fade from black at scene start
 # --------------------------------------------------------------------
 
 # --- wall "magnetic" repulsion for tiles ---
@@ -96,6 +97,13 @@ func _ready():
 
 		# Set player sprite based on current character
 		_update_player_sprite()
+
+	# Wait a frame to ensure everything is positioned
+	await get_tree().process_frame
+
+	# Now fade from black using persistent BlackoutManager (everything is set up)
+	await get_tree().create_timer(0.1).timeout
+	await BlackoutManager.fade_from_black(blackout_fade_duration)
 
 	# Start with first shape
 	start_next_shape()
