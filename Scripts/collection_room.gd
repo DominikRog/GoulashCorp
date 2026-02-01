@@ -7,6 +7,7 @@ extends Node2D
 @export var levitation_amplitude: float = 3.0  # How much mask moves up/down
 @export var levitation_speed: float = 2.0  # How fast mask levitates
 @export var snap_duration: float = 0.2  # Duration of snap-to-face animation
+@export var blackout_fade_duration: float = 0.15  # Duration of blackout fade (quick)
 
 var mask_position: Vector2
 var mask_base_position: Vector2  # Original position for levitation
@@ -219,23 +220,30 @@ func collect_mask():
 
 	mask_collected = true
 
-	# Hide mask
-	if mask_sprite:
-		mask_sprite.visible = false
-
 	# Get current act data for character swap
 	var act_data = GameManager.get_current_act_data()
 	var next_character = act_data.get("next_character", "")
 
-	# Swap player sprite instantly (animation later)
+	# Hide mask
+	if mask_sprite:
+		mask_sprite.visible = false
+
+	# Swap player sprite IMMEDIATELY so player sees the new character
 	swap_character_sprite(next_character)
 
-	# Update game manager
+	# Pause to let player see the transformation
+	await get_tree().create_timer(0.4).timeout
+
+	# Fade to black using persistent BlackoutManager
+	await BlackoutManager.fade_to_black(blackout_fade_duration)
+
+	# Update game manager while screen is black
 	GameManager.advance_to_next_act(next_character)
 
-	# Brief pause then blackout to next act
-	await get_tree().create_timer(0.5).timeout
+	# Brief moment during blackout
+	await get_tree().create_timer(0.2).timeout
 
+	# Transition to next scene while still black (blackout persists across scene change)
 	# Check if game is won
 	if GameManager.current_act > 6:
 		# Victory - go to finale scene (king explosion)

@@ -42,6 +42,14 @@ func _ready():
 	camera.global_position = center
 	camera.zoom = Vector2(1.0, 1.0)
 
+	# Wait a frame for scene setup
+	await get_tree().process_frame
+
+	# Fade from black (if coming from blackout transition)
+	if BlackoutManager.is_black():
+		await get_tree().create_timer(0.2).timeout
+		await BlackoutManager.fade_from_black(0.5)
+
 	# Start the sequence
 	await get_tree().create_timer(0.5).timeout
 	start_finale_sequence()
