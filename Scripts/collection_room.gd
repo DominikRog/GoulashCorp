@@ -3,11 +3,12 @@ extends Node2D
 # Collection room where player collects mask and transforms
 
 @export var play_area_size: Vector2 = Vector2(240, 128)
-@export var collection_distance: float = 20.0  # Distance to trigger mask collection
+@export var collection_distance: float = 30.0  # Distance to trigger mask collection (50% larger range)
 @export var levitation_amplitude: float = 3.0  # How much mask moves up/down
 @export var levitation_speed: float = 2.0  # How fast mask levitates
 @export var snap_duration: float = 0.2  # Duration of snap-to-face animation
 @export var blackout_fade_duration: float = 0.15  # Duration of blackout fade (quick)
+@export var mask_follow_speed: float = 112.0  # Speed mask follows player (30% slower for chase dynamic)
 
 var mask_position: Vector2
 var mask_base_position: Vector2  # Original position for levitation
@@ -16,6 +17,7 @@ var has_answered: bool = false
 var mask_collected: bool = false
 var levitation_time: float = 0.0
 var is_snapping: bool = false
+var is_following_player: bool = false  # Mask follows player to face
 
 # Typewriter effect variables
 var full_text: String = ""
@@ -76,14 +78,32 @@ func _process(delta):
 		else:
 			question_label.text = full_text.substr(0, chars_to_show)
 
+	# Follow player to face
+	if is_following_player and player and mask_sprite:
+		var direction = (player.global_position - mask_sprite.global_position).normalized()
+		var distance = player.global_position.distance_to(mask_sprite.global_position)
+
+		# Move mask toward player (slightly slower than player speed)
+		var move_distance = mask_follow_speed * delta
+		if move_distance >= distance:
+			# Reached player's face - stop player movement immediately
+			mask_sprite.global_position = player.global_position
+			player.can_move = false  # Freeze player for transformation
+			is_following_player = false
+			collect_mask()
+		else:
+			# Continue following
+			mask_sprite.global_position += direction * move_distance
+		return
+
 	# Levitate mask (up and down)
-	if has_answered and not mask_collected and not is_snapping:
+	if has_answered and not mask_collected and not is_snapping and not is_following_player:
 		levitation_time += delta * levitation_speed
 		var offset_y = sin(levitation_time) * levitation_amplitude
 		if mask_sprite:
 			mask_sprite.global_position = mask_base_position + Vector2(0, offset_y)
 
-	if not has_answered or mask_collected or is_snapping:
+	if not has_answered or mask_collected or is_snapping or is_following_player:
 		return
 
 	# Check if player is close enough to snap mask to face
@@ -194,24 +214,12 @@ func start_player_entrance():
 	player.start_entrance(entry_pos, player_entrance_position)
 
 func snap_mask_to_face():
-	"""Snap mask to player's face with animation"""
-	if is_snapping or mask_collected:
+	"""Start mask following player to their face"""
+	if is_snapping or mask_collected or is_following_player:
 		return
 
 	is_snapping = true
-
-	# Create tween for smooth snap animation
-	var tween = create_tween()
-	tween.set_trans(Tween.TRANS_SINE)
-	tween.set_ease(Tween.EASE_IN_OUT)
-
-	# Snap to player's face position
-	if player and mask_sprite:
-		tween.tween_property(mask_sprite, "global_position", player.global_position, snap_duration)
-
-	# When snap completes, collect mask
-	await tween.finished
-	collect_mask()
+	is_following_player = true
 
 func collect_mask():
 	"""Collect mask and swap character sprite"""
